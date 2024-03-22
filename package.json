@@ -1,0 +1,30 @@
+{
+  "name": "dishared",
+  "version": "1.0.0",
+  "description": "RESTful API to discover and explore a universe of recipes.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JaviGarc1a/DiShared.git"
+  },
+  "keywords": [
+    "RESTful",
+    "API",
+    "node",
+    "express",
+    "mongo"
+  ],
+  "author": "JaviGarc1a, AntonioRodriguezRuiz",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/JaviGarc1a/DiShared/issues"
+  },
+  "homepage": "https://github.com/JaviGarc1a/DiShared#readme",
+  "dependencies": {
+    "express": "^4.19.1",
+    "mongoose": "^8.2.3"
+  }
+}
