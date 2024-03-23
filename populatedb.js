@@ -23,9 +23,10 @@ async function main() {
   console.log('Debug: About to connect')
   await mongoose.connect(mongoDB)
   console.log('Debug: Should be connected?')
-  await createRecipes()
   await createUsers()
   await createIngredients()
+  await createRecipes()
+  await relateUsersRecipes()
   await createRatings()
   console.log('Debug: Closing mongoose')
   mongoose.connection.close()
@@ -50,6 +51,24 @@ async function createIngredients() {
     ingredientCreate(4, 'Flour'),
     ingredientCreate(5, 'Eggs'),
     ingredientCreate(6, 'Olive Oil'),
+  ])
+}
+
+async function userCreate(index, username, email, password, recipes = []) {
+  const user = new User({ username, email, password, recipes })
+  await user.save()
+  users[index] = user
+  console.log('Debug: User created')
+}
+
+async function createUsers() {
+  await Promise.all([
+    userCreate(0, 'Alvaro', 'alvaro@gmail.com', 'Password123.'),
+    userCreate(1, 'Bobby', 'bobby@gmail.com', 'Password123.'),
+    userCreate(2, 'Charlie', 'charlie@gmail.com', 'Password123.'),
+    userCreate(3, 'Diana', 'diana@gmail.com', 'Password123.'),
+    userCreate(4, 'Elena', 'elena@gmail.com', 'Password123.'),
+    userCreate(5, 'Fernando', 'fernando@gmail.com', 'Password123.'),
   ])
 }
 
@@ -205,6 +224,23 @@ async function createRecipes() {
   ])
 }
 
+async function relateUsersRecipes() {
+  users[0].recipes.push(recipes[0])
+  users[1].recipes.push(recipes[1])
+  users[2].recipes.push(recipes[2])
+  users[3].recipes.push(recipes[3])
+  users[4].recipes.push(recipes[4])
+  users[5].recipes.push(recipes[5])
+  await Promise.all([
+    users[0].save(),
+    users[1].save(),
+    users[2].save(),
+    users[3].save(),
+    users[4].save(),
+    users[5].save(),
+  ])
+}
+
 async function ratingCreate(index, score, comment, user_id, recipe_id) {
   const rating = new Rating({ score, comment, user_id, recipe_id })
   await rating.save()
@@ -220,23 +256,5 @@ async function createRatings() {
     ratingCreate(3, 2, 'Could be better', users[3], recipes[3]),
     ratingCreate(4, 1, 'Not my favorite', users[4], recipes[4]),
     ratingCreate(5, 0, 'Disgusting', users[5], recipes[5]),
-  ])
-}
-
-async function userCreate(index, username, password, recipes = []) {
-  const user = new User({ username, password, recipes })
-  await user.save()
-  users[index] = user
-  console.log('Debug: User created')
-}
-
-async function createUsers() {
-  await Promise.all([
-    userCreate(0, 'Alvaro', 'Password123.', [recipes[0]]),
-    userCreate(1, 'Bobby', 'Password123.', [recipes[1]]),
-    userCreate(2, 'Charlie', 'Password123.', [recipes[2]]),
-    userCreate(3, 'Diana', 'Password123.', [recipes[3]]),
-    userCreate(4, 'Elena', 'Password123.', [recipes[4]]),
-    userCreate(5, 'Fernando', 'Password123.', [recipes[5]]),
   ])
 }
