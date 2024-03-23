@@ -6,6 +6,7 @@ const DifficultyEnum = ['easy', 'medium', 'hard']
 const RecipeSchema = new Schema({
   title: String,
   description: String,
+  steps: [String],
   preparation_time: Number,
   difficulty: { type: String, enum: DifficultyEnum },
   user_id: { type: Schema.Types.ObjectId, ref: 'User' },
