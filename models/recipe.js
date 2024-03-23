@@ -4,12 +4,12 @@ const Schema = mongoose.Schema
 const DifficultyEnum = ['easy', 'medium', 'hard']
 
 const RecipeSchema = new Schema({
-  title: String,
+  title: { type: String, required: true },
   description: String,
-  steps: [String],
+  steps: { type: [String], required: true },
   preparation_time: Number,
-  difficulty: { type: String, enum: DifficultyEnum },
-  user_id: { type: Schema.Types.ObjectId, ref: 'User' },
+  difficulty: { type: String, enum: DifficultyEnum, required: true },
+  user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   ingredients: [
     {
       ingredient_id: { type: Schema.Types.ObjectId, ref: 'Ingredient' },
