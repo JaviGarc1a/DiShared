@@ -42,16 +42,7 @@
  *              recipes: [5f7d6c6b6e4f0b0017e9b3f4]
  *       401:
  *        description: Unauthorized. Token not found or invalid.
- *       404:
- *        description: The User was not found
- * /users/protected:
- *   get:
- *     summary: Protected route
- *     tags: [Users]
- *     responses:
- *       200:
- *         description: This is a protected route
- *         content:
+ *        content:
  *           application/json:
  *             schema:
  *               properties:
@@ -59,9 +50,19 @@
  *                   type: string
  *                   description: The message of the response
  *             type: object
- *       401:
- *         description: Unauthorized. Token not found or invalid.
- *         content:
+ *       404:
+ *        description: The User was not found
+ *        content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: The message of the response
+ *             type: object
+ *       500:
+ *        description: Internal Server Error
+ *        content:
  *           application/json:
  *             schema:
  *               properties:
@@ -70,34 +71,25 @@
  *                   description: The message of the response
  *             type: object
  */
-var express = require("express");
-var router = express.Router();
+var express = require('express')
+var router = express.Router()
 
-const authMiddleware = require("../middlewares/authMiddleware");
+const authMiddleware = require('../middlewares/authMiddleware')
 
-const User = require("../models/user");
+const User = require('../models/user')
 
 /* GET users listing. */
-router.get("/", authMiddleware, async function (req, res) {
+router.get('/', authMiddleware, async function (req, res) {
   // Get users without the password field
-  const users = await User.find({}, "-password");
-  res.json(users);
-});
+  const users = await User.find({}, '-password')
+  res.json(users)
+})
 
 /* GET user by ID */
-router.get("/:id", async function (req, res) {
-  const { id } = req.params;
-  const user = await User.findById(id, "-password");
-  res.json(user);
-});
+router.get('/:id', async function (req, res) {
+  const { id } = req.params
+  const user = await User.findById(id, '-password')
+  res.json(user)
+})
 
-// TODO: Remove this route when other protected routes are added
-// Example Protected route
-router.get("/protected", authMiddleware, (req, res) => {
-  // Access userId from req object
-  const userId = req.userId;
-
-  res.json({ message: "This is a protected route", userId });
-});
-
-module.exports = router;
+module.exports = router
