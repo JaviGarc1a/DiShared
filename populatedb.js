@@ -223,8 +223,8 @@ async function createRecipes() {
   ])
 }
 
-async function ratingCreate(index, score, user_id, recipe_id) {
-  const rating = new Rating({ score, user_id, recipe_id })
+async function ratingCreate(index, score, comment, user_id, recipe_id) {
+  const rating = new Rating({ score, comment, user_id, recipe_id })
   await rating.save()
   ratings[index] = rating
   console.log('Debug: Rating created')
@@ -232,11 +232,11 @@ async function ratingCreate(index, score, user_id, recipe_id) {
 
 async function createRatings() {
   await Promise.all([
-    ratingCreate(0, 5, users[0], recipes[0]),
-    ratingCreate(1, 4, users[1], recipes[1]),
-    ratingCreate(2, 3, users[2], recipes[2]),
-    ratingCreate(3, 2, users[3], recipes[3]),
-    ratingCreate(4, 1, users[4], recipes[4]),
-    ratingCreate(5, 0, users[5], recipes[5]),
+    ratingCreate(0, 5, 'Delicious!', users[0], recipes[0]),
+    ratingCreate(1, 4, 'Yummy!', users[1], recipes[1]),
+    ratingCreate(2, 3, 'Not too bad', users[2], recipes[2]),
+    ratingCreate(3, 2, 'Could be better', users[3], recipes[3]),
+    ratingCreate(4, 1, 'Not my favorite', users[4], recipes[4]),
+    ratingCreate(5, 0, 'Disgusting', users[5], recipes[5]),
   ])
 }
