@@ -166,6 +166,46 @@
  *                message:
  *                  description: The message of the response
  *                type: object
+ *   delete:
+ *     summary: Delete a user by ID
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The user ID
+ *         example: 65ff1d51975b564ffe1b016d
+ *     responses:
+ *       200:
+ *         description: The user has been deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   description: The message of the response
+ *             type: object
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   description: The message of the response
+ *             type: object
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   description: The message of the response
+ *             type: object
+ *
  */
 var express = require('express')
 var router = express.Router()
@@ -239,6 +279,20 @@ router.put('/:id', authMiddleware, async function (req, res) {
       { new: true }
     )
     res.status(200).json(updateUser)
+  } catch (error) {
+    return res.status(500).json({ message: 'Something went wrong' })
+  }
+})
+
+/* DELETE user by ID */
+router.delete('/:id', authMiddleware, async function (req, res) {
+  try {
+    const deleteUser = await User.findByIdAndDelete(req.params.id)
+    if (deleteUser) {
+      res.status(200).json({ message: 'User deleted' })
+    } else {
+      res.status(404).json({ message: 'User not found' })
+    }
   } catch (error) {
     return res.status(500).json({ message: 'Something went wrong' })
   }
