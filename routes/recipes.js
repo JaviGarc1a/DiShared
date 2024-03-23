@@ -28,33 +28,72 @@
  *         description: The recipe ID
  *         example: 5f7d6c6b6e4f0b0017e9b3f4
  *     responses:
- *         200:
- *           description: The recipe
- *           content:
- *             application/json:
- *               schema:
- *                   $ref: '#/components/schemas/Recipe'
- *               type: object
- *               example:
- *                   _id: 5f7d6c6b6e4f0b0017e9b3f4
- *                   title: Chocolate Cake
- *                   description: A delicious chocolate cake
- *                   steps: ["Preheat the oven to 350°F", "Mix the ingredients", "Bake for 30 minutes"]
- *                   preparation_time: 30
- *                   difficulty: easy
- *                   user_id: 5f7d6c6b6e4f0b0017e9b3f4
- *                   ingredients: [
- *                     {
- *                       ingredient_id: 5f7d6c6b6e4f0b0017e9b3f4,
- *                       quantity: 2,
- *                       unit: cups
- *                     },
- *                     {
- *                       ingredient_id: 5f7d6c6b6e4f0b0017e9b3f4,
- *                       quantity: 1,
- *                       unit: tablespoon
- *                     }
+ *       200:
+ *         description: The recipe
+ *         content:
+ *           application/json:
+ *             schema:
+ *                 $ref: '#/components/schemas/Recipe'
+ *             type: object
+ *             example:
+ *                 _id: 5f7d6c6b6e4f0b0017e9b3f4
+ *                 title: Chocolate Cake
+ *                 description: A delicious chocolate cake
+ *                 steps: ["Preheat the oven to 350°F", "Mix the ingredients", "Bake for 30 minutes"]
+ *                 preparation_time: 30
+ *                 difficulty: easy
+ *                 user_id: 5f7d6c6b6e4f0b0017e9b3f4
+ *                 ingredients: [
+ *                   {
+ *                     ingredient_id: 5f7d6c6b6e4f0b0017e9b3f4,
+ *                     quantity: 2,
+ *                     unit: cups,
+ *                     name: flour
+ *                   },
+ *                   {
+ *                     ingredient_id: 5f7d6c6b6e4f0b0017e9b3f4,
+ *                     quantity: 1,
+ *                     unit: tablespoon,
+ *                     name: sugar
+ *                   }
+ *                 ]
+ *                 user: {
+ *                   _id: 5f7d6c6b6e4f0b0017e9b3f4,
+ *                   username: Alvaro,
+ *                   email: alvaro@gmail.com,
+ *                   recipes: [
+ *                     5f7d6c6b6e4f0b0017e9b3f4
  *                   ]
+ *                 }
+ *                 ratings: [
+ *                   {
+ *                     _id: 5f7d6c6b6e4f0b0017e9b3f4,
+ *                     rating: 5,
+ *                     user_id: 5f7d6c6b6e4f0b0017e9b3f4,
+ *                     recipe_id: 5f7d6c6b6e4f0b0017e9b3f4,
+ *                     poster: Alvaro
+ *                   }
+ *                 ]
+ *       404:
+ *         description: Recipe not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: The message of the response
+ *             type: object
+ *       500:
+ *         description: Recipe not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: The message of the response
+ *             type: object
  */
 
 var express = require('express')
