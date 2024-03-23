@@ -15,6 +15,43 @@
  *             schema:
  *               $ref: '#/components/schemas/User'
  *             type: array
+ *   post:
+ *     summary: Create a new user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
+ *           type: object
+ *           example:
+ *             username: Javier
+ *             email: javier@gmail.com
+ *             password: Javier123.
+ *     responses:
+ *       200:
+ *         description: The user was successfully created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *             type: object
+ *             example:
+ *                 _id: 5f7d6c6b6e4f0b0017e9b3f4
+ *                 username: Javier
+ *                 email: javier@gmail.com
+ *                 password: Javier123.
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *            application/json:
+ *              schema:
+ *                properties:
+ *                  message:
+ *                    type: string
+ *                    description: The message of the response
+ *              type: object
  * /users/{id}:
  *   get:
  *     summary: Get a User by ID
@@ -78,7 +115,6 @@ const authMiddleware = require('../middlewares/authMiddleware')
 
 const User = require('../models/user')
 const { getUserRecipes } = require('../helpers/userHelpers')
-const Recipe = require('../models/recipe')
 
 /* GET users listing. */
 router.get('/', async function (req, res) {
@@ -98,6 +134,20 @@ router.get('/', async function (req, res) {
     res.json(usersWithRecipes)
   } catch (error) {
     res.status(500).json({ error: error.message })
+  }
+})
+
+/* POST create user */
+router.post('/', async function (req, res) {
+  const { username, email, password } = req.body
+
+  try {
+    const user = new User({ username, email, password })
+    await user.save()
+
+    res.json(user)
+  } catch (error) {
+    res.status(500).json({ message: 'Something went wrong' })
   }
 })
 
