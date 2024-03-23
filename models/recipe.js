@@ -90,14 +90,18 @@ RecipeSchema.virtual('url').get(function () {
 })
 
 // Delete associated ratings when a recipe is deleted
-RecipeSchema.pre('deleteOne', async function (next) {
-  try {
-    await Rating.deleteMany({ recipe_id: this._id })
-    next()
-  } catch (error) {
-    next(error)
-  }
-})
+RecipeSchema.pre(
+  'deleteOne',
+  { document: true, query: false },
+  async function (next) {
+    try {
+      await Rating.deleteMany({ recipe_id: this._id })
+      next()
+    } catch (error) {
+      next(error)
+    }
+  },
+)
 
 const Recipe = mongoose.model('Recipe', RecipeSchema)
 
