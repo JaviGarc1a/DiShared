@@ -79,17 +79,22 @@ const authMiddleware = require('../middlewares/authMiddleware')
 const User = require('../models/user')
 
 /* GET users listing. */
-router.get('/', authMiddleware, async function (req, res) {
+router.get('/', async function (req, res) {
   // Get users without the password field
   const users = await User.find({}, '-password')
   res.json(users)
 })
 
 /* GET user by ID */
-router.get('/:id', async function (req, res) {
+router.get('/:id', authMiddleware, async function (req, res) {
   const { id } = req.params
-  const user = await User.findById(id, '-password')
-  res.json(user)
+
+  try {
+    const user = await User.findById(id, '-password')
+    res.json(user)
+  } catch (error) {
+    return res.status(500).json({ message: 'Something went wrong' })
+  }
 })
 
 module.exports = router
