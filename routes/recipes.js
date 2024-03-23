@@ -15,6 +15,63 @@
  *             schema:
  *               $ref: '#/components/schemas/Recipe'
  *             type: array
+ *   post:
+ *     summary: Create a new recipe
+ *     tags: [Recipes]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Recipe'
+ *           type: object
+ *           example:
+ *             title: Chocolate Cake
+ *             description: A delicious chocolate cake
+ *             steps: ["Preheat the oven to 350°F", "Mix the ingredients", "Bake for 30 minutes"]
+ *             preparation_time: 30
+ *             difficulty: easy
+ *             user_id: 5f7d6c6b6e4f0b0017e9b3f4
+ *             ingredients: [
+ *               {
+ *                 name: chocolate,
+ *                 quantity: 2,
+ *                 unit: cups
+ *               },
+ *               {
+ *                 name: sugar,
+ *                 quantity: 1,
+ *                 unit: tablespoon
+ *               }
+ *             ]
+ *     responses:
+ *       200:
+ *         description: The recipe
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Recipe'
+ *             type: object
+ *             example:
+ *                 _id: 5f7d6c6b6e4f0b0017e9b3f4
+ *                 title: Chocolate Cake
+ *                 description: A delicious chocolate cake
+ *                 steps: ["Preheat the oven to 350°F", "Mix the ingredients", "Bake for 30 minutes"]
+ *                 preparation_time: 30
+ *                 difficulty: easy
+ *                 user_id: 5f7d6c6b6e4f0b0017e9b3f4
+ *                 ingredients: [
+ *                   {
+ *                     name: chocolate,
+ *                     quantity: 2,
+ *                     unit: cups
+ *                   },
+ *                   {
+ *                     name: sugar,
+ *                     quantity: 1,
+ *                     unit: tablespoon
+ *                   }
+ *                 ]
  * /recipes/{id}:
  *   get:
  *     summary: Returns a recipe by ID
@@ -159,6 +216,52 @@ router.get('/:id', async function (req, res, next) {
     res.json(recipe)
   } catch (err) {
     return res.status(500).json({ message: 'Recipe not found' })
+  }
+})
+
+// POST a new recipe (protected route)
+router.post('/', authMiddleware, async function (req, res, next) {
+  const {
+    title,
+    description,
+    steps,
+    preparation_time,
+    difficulty,
+    ingredients,
+  } = req.body
+
+  // Replace ingredient name with ingredient_id
+  ingredients.forEach(async (i) => {
+    try {
+      i.ingredient_id = await Ingredient.findOne({ name: i.name }).select('_id')
+    } catch (err) {
+      // Create a new ingredient if it doesn't exist
+      const ingredient = new Ingredient({ name: i.name })
+      try {
+        const savedIngredient = await ingredient.save()
+        i.ingredient_id = savedIngredient._id
+      } catch (err) {
+        res.status(400).json({ message: err.message })
+      }
+    }
+    delete i.name
+  })
+
+  const recipe = new Recipe({
+    title,
+    description,
+    steps,
+    preparation_time,
+    difficulty,
+    user_id: req.userId,
+    ingredients,
+  })
+
+  try {
+    const savedRecipe = await recipe.save()
+    res.status(200).json(savedRecipe)
+  } catch (err) {
+    res.status(400).json({ message: err.message })
   }
 })
 
