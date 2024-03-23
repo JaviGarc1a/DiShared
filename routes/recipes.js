@@ -75,9 +75,7 @@ router.get('/', async function (req, res, next) {
 // GET a recipe by ID
 router.get('/:id', async function (req, res, next) {
   try {
-    const recipe = await Recipe.findById(req.params.id)
-      .select('-user_id')
-      .lean()
+    const recipe = await Recipe.findById(req.params.id).lean()
 
     if (!recipe) {
       return res.status(404).json({ message: 'Recipe not found' })
