@@ -30,7 +30,6 @@
  *                   _id: 5f7d6c6b6e4f0b0017e9b3f4
  *                   username: Alvaro
  *                   email: alvaro@gmail.com
- *                   password: Password123.
  *                   recipes: []
  */
 const mongoose = require('mongoose')
