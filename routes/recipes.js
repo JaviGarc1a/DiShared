@@ -415,8 +415,6 @@ router.put(
       ingredients,
     }
 
-    console.log(recipe)
-
     try {
       const updatedRecipe = await Recipe.findByIdAndUpdate(
         req.params.id,
@@ -427,7 +425,6 @@ router.put(
       )
       res.status(200).json(updatedRecipe)
     } catch (err) {
-      console.log(err)
       res.status(400).json({ message: err.message })
     }
   },
@@ -445,7 +442,6 @@ router.delete(
       await recipe.deleteOne()
       res.json({ message: 'The recipe has been deleted' })
     } catch (err) {
-      console.log(err)
       return res.status(500).json({ message: 'Something went wrong' })
     }
   },
