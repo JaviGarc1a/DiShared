@@ -268,6 +268,7 @@ const authMiddleware = require('../middlewares/authMiddleware')
 const {
   userRecipeOwnershipMiddleware,
 } = require('../middlewares/userMiddleware')
+const { recipeExistMiddleware } = require('../middlewares/recipeMiddleware')
 
 const Recipe = require('../models/recipe')
 const User = require('../models/user')
@@ -281,13 +282,9 @@ router.get('/', async function (req, res, next) {
 })
 
 // GET a recipe by ID
-router.get('/:id', async function (req, res, next) {
+router.get('/:id', recipeExistMiddleware, async function (req, res, next) {
   try {
-    const recipe = await Recipe.findById(req.params.id).lean()
-
-    if (!recipe) {
-      return res.status(404).json({ message: 'Recipe not found' })
-    }
+    const recipe = req.recipe.toObject()
 
     const user = await User.findById(recipe.user_id).select('-password')
 
@@ -379,6 +376,7 @@ router.post('/', authMiddleware, async function (req, res, next) {
 router.put(
   '/:id',
   authMiddleware,
+  recipeExistMiddleware,
   userRecipeOwnershipMiddleware,
   async function (req, res, next) {
     const {
@@ -439,13 +437,11 @@ router.put(
 router.delete(
   '/:id',
   authMiddleware,
+  recipeExistMiddleware,
   userRecipeOwnershipMiddleware,
   async function (req, res, next) {
     try {
-      const recipe = await Recipe.findById(req.params.id)
-      if (!recipe) {
-        return res.status(404).json({ message: 'Recipe not found' })
-      }
+      const recipe = req.recipe
       await recipe.deleteOne()
       res.json({ message: 'The recipe has been deleted' })
     } catch (err) {
