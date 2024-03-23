@@ -49,7 +49,6 @@
  *              schema:
  *                properties:
  *                  message:
- *                    type: string
  *                    description: The message of the response
  *              type: object
  * /users/{id}:
@@ -84,7 +83,6 @@
  *             schema:
  *               properties:
  *                 message:
- *                   type: string
  *                   description: The message of the response
  *             type: object
  *       404:
@@ -94,7 +92,6 @@
  *             schema:
  *               properties:
  *                 message:
- *                   type: string
  *                   description: The message of the response
  *             type: object
  *       500:
@@ -104,9 +101,71 @@
  *             schema:
  *               properties:
  *                 message:
- *                   type: string
  *                   description: The message of the response
  *             type: object
+ *
+ *   put:
+ *     summary: Update a User by ID
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The user ID
+ *         example: 65ff1d51975b564ffe1b016d
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
+ *           type: object
+ *           example:
+ *             username: Alvaro
+ *             email: alvaro1@gmail.com
+ *             password: Alvaro123.
+ *     responses:
+ *       200:
+ *        description: The User was updated
+ *        content:
+ *          application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/User'
+ *            type: object
+ *            example:
+ *                _id: 65ff1d51975b564ffe1b016d
+ *                username: Alvaro
+ *                email: alvaro1@gmail.com
+ *                password: Alvaro123.
+ *       401:
+ *        description: Unauthorized. Token not found or invalid.
+ *        content:
+ *          application/json:
+ *            schema:
+ *              properties:
+ *                message:
+ *                  description: The message of the response
+ *                type: object
+ *       404:
+ *        description: The User was not found
+ *        content:
+ *          application/json:
+ *            schema:
+ *              properties:
+ *                message:
+ *                  description: The message of the response
+ *                type: object
+ *       500:
+ *        description: Internal Server Error
+ *        content:
+ *          application/json:
+ *            schema:
+ *              properties:
+ *                message:
+ *                  description: The message of the response
+ *                type: object
  */
 var express = require('express')
 var router = express.Router()
@@ -164,6 +223,22 @@ router.get('/:id', authMiddleware, async function (req, res) {
     const userWithRecipes = { ...user._doc, recipes: userRecipes }
 
     res.json(userWithRecipes)
+  } catch (error) {
+    return res.status(500).json({ message: 'Something went wrong' })
+  }
+})
+
+/* PUT update user by ID */
+router.put('/:id', authMiddleware, async function (req, res) {
+  const { username, email, password } = req.body
+
+  try {
+    const updateUser = await User.findByIdAndUpdate(
+      req.params.id,
+      { username, email, password },
+      { new: true }
+    )
+    res.status(200).json(updateUser)
   } catch (error) {
     return res.status(500).json({ message: 'Something went wrong' })
   }
