@@ -103,6 +103,17 @@ RecipeSchema.pre(
   },
 )
 
+// Add recipe to user's recipes
+RecipeSchema.post('save', async function (doc, next) {
+  try {
+    const User = require('./user')
+    await User.findByIdAndUpdate(doc.user_id, { $push: { recipes: doc._id } })
+    next()
+  } catch (error) {
+    next(error)
+  }
+})
+
 const Recipe = mongoose.model('Recipe', RecipeSchema)
 
 module.exports = Recipe
