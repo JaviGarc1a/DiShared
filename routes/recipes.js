@@ -215,7 +215,7 @@ router.get('/:id', async function (req, res, next) {
 
     res.json(recipe)
   } catch (err) {
-    return res.status(500).json({ message: 'Recipe not found' })
+    return res.status(500).json({ message: 'Something went wrong' })
   }
 })
 
@@ -231,21 +231,19 @@ router.post('/', authMiddleware, async function (req, res, next) {
   } = req.body
 
   // Replace ingredient name with ingredient_id
-  ingredients.forEach(async (i) => {
-    try {
-      i.ingredient_id = await Ingredient.findOne({ name: i.name }).select('_id')
-    } catch (err) {
-      // Create a new ingredient if it doesn't exist
+  for (let i of ingredients) {
+    i.ingredient_id = await Ingredient.findOne({ name: i.name })
+    // Create a new ingredient if it doesn't exist
+    if (!i.ingredient_id) {
       const ingredient = new Ingredient({ name: i.name })
       try {
-        const savedIngredient = await ingredient.save()
-        i.ingredient_id = savedIngredient._id
+        i.ingredient_id = await ingredient.save()
       } catch (err) {
         res.status(400).json({ message: err.message })
       }
     }
     delete i.name
-  })
+  }
 
   const recipe = new Recipe({
     title,
