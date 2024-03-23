@@ -25,6 +25,39 @@ async function main() {
   await mongoose.connect(mongoDB)
 }
 
+// Swagger UI
+const swaggerUi = require('swagger-ui-express')
+const swaggerJsdoc = require('swagger-jsdoc')
+const bodyParser = require('body-parser')
+
+const options = {
+  definition: {
+    openapi: '3.1.0',
+    info: {
+      title: 'DiShared',
+      version: '1.0.0',
+      description: 'RESTful API to discover and explore a universe of recipes.',
+      license: {
+        name: 'GPL-3.0',
+        url: 'https://www.gnu.org/licenses/gpl-3.0.html',
+      },
+    },
+    servers: [
+      {
+        url: 'http://localhost:3000',
+      },
+    ],
+  },
+  apis: ['./routes/*.js', './models/*.js'],
+}
+
+const specs = swaggerJsdoc(options)
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(specs, { explorer: true }),
+)
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade')
