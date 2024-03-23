@@ -72,6 +72,7 @@
  *                     unit: tablespoon
  *                   }
  *                 ]
+ *
  * /recipes/{id}:
  *   get:
  *     summary: Returns a recipe by ID
@@ -142,7 +143,7 @@
  *                   description: The message of the response
  *             type: object
  *       500:
- *         description: Recipe not found
+ *         description: Internal Server Error
  *         content:
  *           application/json:
  *             schema:
@@ -151,6 +152,71 @@
  *                   type: string
  *                   description: The message of the response
  *             type: object
+ *   put:
+ *     summary: Update a recipe. Provide only the fields you want to update
+ *     tags: [Recipes]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The recipe ID
+ *         example: 5f7d6c6b6e4f0b0017e9b3f4
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Recipe'
+ *           type: object
+ *           example:
+ *             title: Chocolate Cake
+ *             description: A delicious chocolate cake
+ *             steps: ["Preheat the oven to 350°F", "Mix the ingredients", "Bake for 30 minutes"]
+ *             preparation_time: 30
+ *             difficulty: easy
+ *             user_id: 5f7d6c6b6e4f0b0017e9b3f4
+ *             ingredients: [
+ *               {
+ *                 name: chocolate,
+ *                 quantity: 2,
+ *                 unit: cups
+ *               },
+ *               {
+ *                 name: sugar,
+ *                 quantity: 1,
+ *                 unit: tablespoon
+ *               }
+ *             ]
+ *     responses:
+ *       200:
+ *         description: The updated recipe
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Recipe'
+ *             type: object
+ *             example:
+ *                 _id: 5f7d6c6b6e4f0b0017e9b3f4
+ *                 title: Chocolate Cake
+ *                 description: A delicious chocolate cake
+ *                 steps: ["Preheat the oven to 350°F", "Mix the ingredients", "Bake for 30 minutes"]
+ *                 preparation_time: 30
+ *                 difficulty: easy
+ *                 user_id: 5f7d6c6b6e4f0b0017e9b3f4
+ *                 ingredients: [
+ *                   {
+ *                     name: chocolate,
+ *                     quantity: 2,
+ *                     unit: cups
+ *                   },
+ *                   {
+ *                     name: sugar,
+ *                     quantity: 1,
+ *                     unit: tablespoon
+ *                   }
+ *                 ]
  */
 
 var express = require('express')
@@ -259,6 +325,64 @@ router.post('/', authMiddleware, async function (req, res, next) {
     const savedRecipe = await recipe.save()
     res.status(200).json(savedRecipe)
   } catch (err) {
+    res.status(400).json({ message: err.message })
+  }
+})
+
+// PUT update a recipe by ID (protected route)
+router.put('/:id', authMiddleware, async function (req, res, next) {
+  console.log('hello')
+  const {
+    title,
+    description,
+    steps,
+    preparation_time,
+    difficulty,
+    ingredients,
+  } = req.body
+
+  console.log(title)
+
+  // Replace ingredient name with ingredient_id
+  if (ingredients) {
+    for (let i of ingredients) {
+      i.ingredient_id = await Ingredient.findOne({ name: i.name })
+      // Create a new ingredient if it doesn't exist
+      if (!i.ingredient_id) {
+        const ingredient = new Ingredient({ name: i.name })
+        try {
+          i.ingredient_id = await ingredient.save()
+        } catch (err) {
+          res.status(400).json({ message: err.message })
+        }
+      }
+      delete i.name
+    }
+  }
+
+  const recipe = {
+    title,
+    description,
+    steps,
+    preparation_time,
+    difficulty,
+    user_id: req.userId,
+    ingredients,
+  }
+
+  console.log(recipe)
+
+  try {
+    const updatedRecipe = await Recipe.findByIdAndUpdate(
+      req.params.id,
+      recipe,
+      {
+        new: true,
+      },
+    )
+    res.status(200).json(updatedRecipe)
+  } catch (err) {
+    console.log(err)
     res.status(400).json({ message: err.message })
   }
 })
