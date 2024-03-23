@@ -15,7 +15,7 @@ const ratings = []
 const mongoose = require('mongoose')
 mongoose.set('strictQuery', false)
 
-const mongoDB = userArgs[0]
+const mongoDB = process.env.DB_URL || userArgs[0]
 
 main().catch((err) => console.log(err))
 
@@ -80,7 +80,7 @@ async function recipeCreate(
   preparation_time,
   difficulty,
   user_id,
-  ingredients,
+  ingredients
 ) {
   const recipe = new Recipe({
     title,
@@ -119,7 +119,7 @@ async function createRecipes() {
         { ingredient_id: ingredients[5], quantity: 2, unit: 'unit' },
         { ingredient_id: ingredients[0], quantity: 1, unit: 'grams' },
         { ingredient_id: ingredients[1], quantity: 1, unit: 'grams' },
-      ],
+      ]
     ),
     recipeCreate(
       1,
@@ -139,7 +139,7 @@ async function createRecipes() {
       5,
       'easy',
       users[1],
-      [{ ingredient_id: ingredients[5], quantity: 1, unit: 'unit' }],
+      [{ ingredient_id: ingredients[5], quantity: 1, unit: 'unit' }]
     ),
     recipeCreate(
       2,
@@ -159,7 +159,7 @@ async function createRecipes() {
       [
         { ingredient_id: ingredients[5], quantity: 2, unit: 'unit' },
         { ingredient_id: ingredients[6], quantity: 1, unit: 'teaspoon' },
-      ],
+      ]
     ),
     recipeCreate(
       3,
@@ -177,7 +177,7 @@ async function createRecipes() {
       5,
       'easy',
       users[3],
-      [{ ingredient_id: ingredients[5], quantity: 2, unit: 'unit' }],
+      [{ ingredient_id: ingredients[5], quantity: 2, unit: 'unit' }]
     ),
     recipeCreate(
       4,
@@ -194,7 +194,7 @@ async function createRecipes() {
       5,
       'easy',
       users[4],
-      [{ ingredient_id: ingredients[5], quantity: 2, unit: 'unit' }],
+      [{ ingredient_id: ingredients[5], quantity: 2, unit: 'unit' }]
     ),
     recipeCreate(
       5,
@@ -219,7 +219,7 @@ async function createRecipes() {
         { ingredient_id: ingredients[5], quantity: 2, unit: 'unit' },
         { ingredient_id: ingredients[0], quantity: 1, unit: 'grams' },
         { ingredient_id: ingredients[1], quantity: 1, unit: 'grams' },
-      ],
+      ]
     ),
   ])
 }
