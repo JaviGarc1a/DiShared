@@ -3,7 +3,7 @@
  * tags:
  *   name: Auth
  *   description: User authentication
- * /login:
+ * /auth/login:
  *   post:
  *     summary: Authenticate user
  *     description: Login with username and password to access restricted routes
@@ -43,7 +43,7 @@ const User = require('../models/user')
 const router = express.Router()
 
 // Login route
-router.post('/', async (req, res) => {
+router.post('/login', async (req, res) => {
   const { username, password } = req.body
 
   try {
