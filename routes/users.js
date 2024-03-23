@@ -77,12 +77,28 @@ var router = express.Router()
 const authMiddleware = require('../middlewares/authMiddleware')
 
 const User = require('../models/user')
+const { getUserRecipes } = require('../helpers/userHelpers')
+const Recipe = require('../models/recipe')
 
 /* GET users listing. */
 router.get('/', async function (req, res) {
-  // Get users without the password field
-  const users = await User.find({}, '-password')
-  res.json(users)
+  try {
+    // Get users without the password field
+    const users = await User.find({}, '-password')
+
+    // Fetch recipes for each user
+    const usersWithRecipes = await Promise.all(
+      users.map(async (user) => {
+        const userRecipes = await getUserRecipes(user.recipes)
+        user.recipes = userRecipes
+        return user
+      })
+    )
+
+    res.json(usersWithRecipes)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
 })
 
 /* GET user by ID */
@@ -90,8 +106,14 @@ router.get('/:id', authMiddleware, async function (req, res) {
   const { id } = req.params
 
   try {
+    // Get user without the password field
     const user = await User.findById(id, '-password')
-    res.json(user)
+
+    // Fetch recipes for user
+    const userRecipes = await getUserRecipes(user.recipes)
+    const userWithRecipes = { ...user._doc, recipes: userRecipes }
+
+    res.json(userWithRecipes)
   } catch (error) {
     return res.status(500).json({ message: 'Something went wrong' })
   }
