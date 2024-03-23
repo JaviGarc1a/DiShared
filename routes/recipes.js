@@ -217,11 +217,57 @@
  *                     unit: tablespoon
  *                   }
  *                 ]
+ *   delete:
+ *     summary: Delete a recipe by ID
+ *     tags: [Recipes]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The recipe ID
+ *         example: 5f7d6c6b6e4f0b0017e9b3f4
+ *     responses:
+ *       200:
+ *         description: The recipe has been deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: The message of the response
+ *             type: object
+ *       404:
+ *         description: Recipe not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: The message of the response
+ *             type: object
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: The message of the response
+ *             type: object
  */
 
 var express = require('express')
 var router = express.Router()
+
 const authMiddleware = require('../middlewares/authMiddleware')
+const {
+  userRecipeOwnershipMiddleware,
+} = require('../middlewares/userMiddleware')
 
 const Recipe = require('../models/recipe')
 const User = require('../models/user')
@@ -330,61 +376,83 @@ router.post('/', authMiddleware, async function (req, res, next) {
 })
 
 // PUT update a recipe by ID (protected route)
-router.put('/:id', authMiddleware, async function (req, res, next) {
-  console.log('hello')
-  const {
-    title,
-    description,
-    steps,
-    preparation_time,
-    difficulty,
-    ingredients,
-  } = req.body
+router.put(
+  '/:id',
+  authMiddleware,
+  userRecipeOwnershipMiddleware,
+  async function (req, res, next) {
+    const {
+      title,
+      description,
+      steps,
+      preparation_time,
+      difficulty,
+      ingredients,
+    } = req.body
 
-  console.log(title)
-
-  // Replace ingredient name with ingredient_id
-  if (ingredients) {
-    for (let i of ingredients) {
-      i.ingredient_id = await Ingredient.findOne({ name: i.name })
-      // Create a new ingredient if it doesn't exist
-      if (!i.ingredient_id) {
-        const ingredient = new Ingredient({ name: i.name })
-        try {
-          i.ingredient_id = await ingredient.save()
-        } catch (err) {
-          res.status(400).json({ message: err.message })
+    // Replace ingredient name with ingredient_id
+    if (ingredients) {
+      for (let i of ingredients) {
+        i.ingredient_id = await Ingredient.findOne({ name: i.name })
+        // Create a new ingredient if it doesn't exist
+        if (!i.ingredient_id) {
+          const ingredient = new Ingredient({ name: i.name })
+          try {
+            i.ingredient_id = await ingredient.save()
+          } catch (err) {
+            res.status(400).json({ message: err.message })
+          }
         }
+        delete i.name
       }
-      delete i.name
     }
-  }
 
-  const recipe = {
-    title,
-    description,
-    steps,
-    preparation_time,
-    difficulty,
-    user_id: req.userId,
-    ingredients,
-  }
+    const recipe = {
+      title,
+      description,
+      steps,
+      preparation_time,
+      difficulty,
+      user_id: req.userId,
+      ingredients,
+    }
 
-  console.log(recipe)
+    console.log(recipe)
 
-  try {
-    const updatedRecipe = await Recipe.findByIdAndUpdate(
-      req.params.id,
-      recipe,
-      {
-        new: true,
-      },
-    )
-    res.status(200).json(updatedRecipe)
-  } catch (err) {
-    console.log(err)
-    res.status(400).json({ message: err.message })
-  }
-})
+    try {
+      const updatedRecipe = await Recipe.findByIdAndUpdate(
+        req.params.id,
+        recipe,
+        {
+          new: true,
+        },
+      )
+      res.status(200).json(updatedRecipe)
+    } catch (err) {
+      console.log(err)
+      res.status(400).json({ message: err.message })
+    }
+  },
+)
+
+// DELETE a recipe by ID (protected route)
+router.delete(
+  '/:id',
+  authMiddleware,
+  userRecipeOwnershipMiddleware,
+  async function (req, res, next) {
+    try {
+      const recipe = await Recipe.findById(req.params.id)
+      if (!recipe) {
+        return res.status(404).json({ message: 'Recipe not found' })
+      }
+      await recipe.deleteOne()
+      res.json({ message: 'The recipe has been deleted' })
+    } catch (err) {
+      console.log(err)
+      return res.status(500).json({ message: 'Something went wrong' })
+    }
+  },
+)
 
 module.exports = router

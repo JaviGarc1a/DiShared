@@ -65,6 +65,8 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
+const Rating = require('./rating')
+
 const DifficultyEnum = ['easy', 'medium', 'hard']
 
 const RecipeSchema = new Schema({
@@ -85,6 +87,16 @@ const RecipeSchema = new Schema({
 
 RecipeSchema.virtual('url').get(function () {
   return `/recipes/${this._id}`
+})
+
+// Delete associated ratings when a recipe is deleted
+RecipeSchema.pre('deleteOne', async function (next) {
+  try {
+    await Rating.deleteMany({ recipe_id: this._id })
+    next()
+  } catch (error) {
+    next(error)
+  }
 })
 
 const Recipe = mongoose.model('Recipe', RecipeSchema)
