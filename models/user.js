@@ -5,6 +5,8 @@ const UserSchema = new Schema({
   username: { type: String, unique: true },
   email: { type: String, unique: true },
   password: String,
+  // List of recipes created by the user
+  recipes: [{ type: Schema.Types.ObjectId, ref: 'Recipe' }],
 })
 
 // Define a virtual property for the user's profile URL

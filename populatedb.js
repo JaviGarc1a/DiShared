@@ -23,35 +23,17 @@ async function main() {
   console.log('Debug: About to connect')
   await mongoose.connect(mongoDB)
   console.log('Debug: Should be connected?')
+  await createRecipes()
   await createUsers()
   await createIngredients()
-  await createRecipes()
   await createRatings()
   console.log('Debug: Closing mongoose')
   mongoose.connection.close()
 }
 
 // We pass the index to the ...Create functions so that, for example,
-// user[0] will always be the user Alvaro , regardless of the order
+// inrgedient[0] will always be the Salt, regardless of the order
 // in which the elements of promise.all's argument complete.
-async function userCreate(index, username, password) {
-  const user = new User({ username, password })
-  await user.save()
-  users[index] = user
-  console.log('Debug: User created')
-}
-
-async function createUsers() {
-  await Promise.all([
-    userCreate(0, 'Alvaro', 'Password123.'),
-    userCreate(1, 'Bobby', 'Password123.'),
-    userCreate(2, 'Charlie', 'Password123.'),
-    userCreate(3, 'Diana', 'Password123.'),
-    userCreate(4, 'Elena', 'Password123.'),
-    userCreate(5, 'Fernando', 'Password123.'),
-  ])
-}
-
 async function ingredientCreate(index, name) {
   const ingredient = new Ingredient({ name })
   await ingredient.save()
@@ -238,5 +220,23 @@ async function createRatings() {
     ratingCreate(3, 2, 'Could be better', users[3], recipes[3]),
     ratingCreate(4, 1, 'Not my favorite', users[4], recipes[4]),
     ratingCreate(5, 0, 'Disgusting', users[5], recipes[5]),
+  ])
+}
+
+async function userCreate(index, username, password, recipes = []) {
+  const user = new User({ username, password, recipes })
+  await user.save()
+  users[index] = user
+  console.log('Debug: User created')
+}
+
+async function createUsers() {
+  await Promise.all([
+    userCreate(0, 'Alvaro', 'Password123.', [recipes[0]]),
+    userCreate(1, 'Bobby', 'Password123.', [recipes[1]]),
+    userCreate(2, 'Charlie', 'Password123.', [recipes[2]]),
+    userCreate(3, 'Diana', 'Password123.', [recipes[3]]),
+    userCreate(4, 'Elena', 'Password123.', [recipes[4]]),
+    userCreate(5, 'Fernando', 'Password123.', [recipes[5]]),
   ])
 }
