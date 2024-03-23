@@ -36,6 +36,8 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
+const bcrypt = require('bcrypt')
+
 const UserSchema = new Schema({
   username: { type: String, unique: true, required: true },
   email: { type: String, unique: true, required: true },
@@ -48,6 +50,38 @@ const UserSchema = new Schema({
 UserSchema.virtual('url').get(function () {
   return `/users/${this._id}`
 })
+
+// Pre-save hook to hash the password before saving the user to the database
+UserSchema.pre('save', async function (next) {
+  try {
+    // Check if the password has been modified or is new
+    if (!this.isModified('password')) {
+      return next()
+    }
+
+    // Generate a salt
+    const salt = await bcrypt.genSalt(10)
+
+    // Hash the password with the generated salt
+    const hashedPassword = await bcrypt.hash(this.password, salt)
+
+    // Replace the plain text password with the hashed password
+    this.password = hashedPassword
+
+    next()
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Method to compare passwords
+UserSchema.methods.comparePassword = async function (candidatePassword) {
+  try {
+    return await bcrypt.compare(candidatePassword, this.password)
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 
 const User = mongoose.model('User', UserSchema)
 
