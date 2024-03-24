@@ -201,5 +201,18 @@ var express = require('express')
 var router = express.Router()
 
 const authMiddleware = require('../middlewares/authMiddleware')
+const Ingredient = require('../models/ingredient')
+
+/* GET ingredients listing. */
+router.get('/', async function (req, res) {
+  try {
+    // Get ingredients from the database
+    const ingredients = await Ingredient.find()
+
+    res.json(ingredients)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
 
 module.exports = router
