@@ -75,7 +75,12 @@ const RecipeSchema = new Schema({
   steps: { type: [String], required: true },
   preparation_time: Number,
   difficulty: { type: String, enum: DifficultyEnum, required: true },
-  user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  user_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    inmutable: true,
+  },
   ingredients: [
     {
       ingredient_id: { type: Schema.Types.ObjectId, ref: 'Ingredient' },
