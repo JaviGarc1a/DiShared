@@ -214,6 +214,7 @@ const authMiddleware = require('../middlewares/authMiddleware')
 const {
   userExistMiddleware,
   userOwnershipMiddleware,
+  userNotExistMiddleware,
 } = require('../middlewares/userMiddleware')
 
 const User = require('../models/user')
@@ -255,28 +256,33 @@ router.post('/', userExistMiddleware, async function (req, res) {
 })
 
 /* GET user by ID */
-router.get('/:id', authMiddleware, async function (req, res) {
-  const { id } = req.params
+router.get(
+  '/:id',
+  authMiddleware,
+  userNotExistMiddleware,
+  async function (req, res) {
+    const { id } = req.params
 
-  try {
-    // Get user without the password field
-    const user = await User.findById(id, '-password')
+    try {
+      // Get user without the password field
+      const user = await User.findById(id, '-password')
 
-    // Fetch recipes for user
-    const userRecipes = await getUserRecipes(user.recipes)
-    const userWithRecipes = { ...user._doc, recipes: userRecipes }
+      // Fetch recipes for user
+      const userRecipes = await getUserRecipes(user.recipes)
+      const userWithRecipes = { ...user._doc, recipes: userRecipes }
 
-    res.json(userWithRecipes)
-  } catch (error) {
-    return res.status(500).json({ message: 'Something went wrong' })
+      res.json(userWithRecipes)
+    } catch (error) {
+      return res.status(500).json({ message: 'Something went wrong' })
+    }
   }
-})
+)
 
 /* PUT update user by ID */
 router.put(
   '/:id',
   authMiddleware,
-  userExistMiddleware,
+  userNotExistMiddleware,
   userOwnershipMiddleware,
   async function (req, res) {
     const { username, email, password } = req.body
@@ -298,7 +304,7 @@ router.put(
 router.delete(
   '/:id',
   authMiddleware,
-  userExistMiddleware,
+  userNotExistMiddleware,
   userOwnershipMiddleware,
   async function (req, res) {
     try {
