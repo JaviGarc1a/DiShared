@@ -659,6 +659,34 @@
  *                 message:
  *                   type: string
  *                   description: The message of the response
+ * /recipes/similar/{id}:
+ *   get:
+ *     summary: Get similar recipes. Similarity is based on the ingredients of the recipe, if the recipe has the same ingredients, it is considered similar.
+ *     tags: [Recipes]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Id of the recipe to get similar recipes
+ *         example: 66008d36779401ccf7b26af3
+ *     responses:
+ *       '200':
+ *         description: A list of recipes similar to the specified recipe
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Recipe'
+ *       '500':
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: The message of the response
  */
 
 var express = require('express')
@@ -678,7 +706,7 @@ const Ingredient = require('../models/ingredient')
 const Rating = require('../models/rating')
 
 // GET all recipes
-router.get('/', async function (req, res, next) {
+router.get('/', async function (req, res) {
   const searchTerm = req.query.s || ''
   const minRating = parseInt(req.query.minRating) || 0
   const maxRating = parseInt(req.query.maxRating) || 5
@@ -712,7 +740,7 @@ router.get('/', async function (req, res, next) {
 })
 
 // Get X latest recipes
-router.get('/latest', async function (req, res, next) {
+router.get('/latest', async function (req, res) {
   try {
     const limit = parseInt(req.query.limit) || 5
     const recipes = await Recipe.find().sort({ _id: -1 }).limit(limit)
@@ -723,7 +751,7 @@ router.get('/latest', async function (req, res, next) {
 })
 
 // GET X popular recipes
-router.get('/popular', async function (req, res, next) {
+router.get('/popular', async function (req, res) {
   const limit = parseInt(req.query.limit) || 5
   const year = parseInt(req.query.year) || false
   const month = parseInt(req.query.month) || false
@@ -780,7 +808,7 @@ router.get('/popular', async function (req, res, next) {
 })
 
 // GET recipes stats
-router.get('/stats', authMiddleware, async function (req, res, next) {
+router.get('/stats', authMiddleware, async function (req, res) {
   const recipes = await Recipe.find().lean()
   const ratings = await Rating.find().lean()
 
@@ -859,7 +887,7 @@ router.get('/stats', authMiddleware, async function (req, res, next) {
 })
 
 // GET trending recipes
-router.get('/trending', authMiddleware, async function (req, res, next) {
+router.get('/trending', authMiddleware, async function (req, res) {
   try {
     const limit = parseInt(req.query.limit) || 5
 
@@ -948,7 +976,7 @@ router.get('/trending', authMiddleware, async function (req, res, next) {
 })
 
 // GET /recipes/user/:id - Get a list of a user's recipes by their ID.
-router.get('/user/:username', authMiddleware, async function (req, res, next) {
+router.get('/user/:username', authMiddleware, async function (req, res) {
   try {
     const username = req.params.username
 
@@ -976,7 +1004,7 @@ router.get('/user/:username', authMiddleware, async function (req, res, next) {
 })
 
 // GET /recipes/wo-ingredients?ings=[...] - Retrieves a list of recipes that don't contain the ingredients ing1, ing2, and ing3.
-router.get('/wo-ingredients', authMiddleware, async function (req, res, next) {
+router.get('/wo-ingredients', authMiddleware, async function (req, res) {
   try {
     const ingredients = req.query.ings.map((ing) => ing.trim())
     // find the ingredient by name case insensitive
@@ -1006,7 +1034,7 @@ router.get('/wo-ingredients', authMiddleware, async function (req, res, next) {
 })
 
 // GET /recipes/ingredients?ings=[...] - Retrieves a list of recipes that contain the ingredients ing1, ing2, and ing3.
-router.get('/ingredients', authMiddleware, async function (req, res, next) {
+router.get('/ingredients', authMiddleware, async function (req, res) {
   try {
     const ingredients = req.query.ings.map((ing) => ing.trim())
     // find the ingredient by name case insensitive
@@ -1034,7 +1062,7 @@ router.get('/ingredients', authMiddleware, async function (req, res, next) {
 })
 
 // GET a recipe by ID
-router.get('/:id', recipeExistMiddleware, async function (req, res, next) {
+router.get('/:id', recipeExistMiddleware, async function (req, res) {
   try {
     var recipe = req.recipe.toObject()
 
@@ -1047,7 +1075,7 @@ router.get('/:id', recipeExistMiddleware, async function (req, res, next) {
 })
 
 // POST a new recipe (protected route)
-router.post('/', authMiddleware, async function (req, res, next) {
+router.post('/', authMiddleware, async function (req, res) {
   const {
     title,
     description,
@@ -1099,7 +1127,7 @@ router.put(
   authMiddleware,
   recipeExistMiddleware,
   userRecipeOwnershipMiddleware,
-  async function (req, res, next) {
+  async function (req, res) {
     const {
       title,
       description,
@@ -1157,7 +1185,7 @@ router.delete(
   authMiddleware,
   recipeExistMiddleware,
   userRecipeOwnershipMiddleware,
-  async function (req, res, next) {
+  async function (req, res) {
     try {
       const recipe = req.recipe
       await recipe.deleteOne()
@@ -1167,5 +1195,24 @@ router.delete(
     }
   }
 )
+
+// GET similar recipes
+router.get('/similar/:id', recipeExistMiddleware, async function (req, res) {
+  try {
+    const recipe = await Recipe.findById(req.params.id)
+    const ingredients = recipe.ingredients.map((i) => i.ingredient_id)
+
+    const similarRecipes = await Recipe.find({
+      ingredients: {
+        $elemMatch: {
+          ingredient_id: { $in: ingredients },
+        },
+      },
+    })
+    res.json(similarRecipes)
+  } catch (err) {
+    return res.status(500).json({ message: 'Something went wrong' })
+  }
+})
 
 module.exports = router
