@@ -66,6 +66,7 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
 const Rating = require('./rating')
+const User = require('./user')
 
 const DifficultyEnum = ['easy', 'medium', 'hard']
 
@@ -101,6 +102,10 @@ RecipeSchema.pre(
   async function (next) {
     try {
       await Rating.deleteMany({ recipe_id: this._id })
+      // Remove from user's recipes
+      await User.findByIdAndUpdate(this.user_id, {
+        $pull: { recipes: this._id },
+      })
       next()
     } catch (error) {
       next(error)
