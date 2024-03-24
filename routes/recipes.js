@@ -446,6 +446,76 @@
  *                   type: string
  *                   description: The message of the response
  *             type: object
+ * /recipes/trending:
+ *   get:
+ *     summary: Retrieves recipes that have risen in popularity the fastest in the last month.
+ *     tags: [Recipes]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: The maximum number of trending recipes to retrieve. Default is 5.
+ *     responses:
+ *       '200':
+ *         description: An array of trending recipes.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Recipe'
+ *         example:
+ *           - _id: 5f7d6c6b6e4f0b0017e9b3f4
+ *             title: Chocolate Cake
+ *             description: A delicious chocolate cake
+ *             steps:
+ *               - Preheat the oven to 350°F
+ *               - Mix the ingredients
+ *               - Bake for 30 minutes
+ *             preparation_time: 30
+ *             difficulty: easy
+ *             user_id: 5f7d6c6b6e4f0b0017e9b3f4
+ *             ingredients:
+ *               - ingredient_id: 5f7d6c6b6e4f0b0017e9b3f4
+ *                 quantity: 2
+ *                 unit: cups
+ *                 name: flour
+ *               - ingredient_id: 5f7d6c6b6e4f0b0017e9b3f4
+ *                 quantity: 1
+ *                 unit: tablespoon
+ *                 name: sugar
+ *             user:
+ *               _id: 5f7d6c6b6e4f0b0017e9b3f4
+ *               username: Alvaro
+ *               email: alvaro@gmail.com
+ *               recipes:
+ *                 - 5f7d6c6b6e4f0b0017e9b3f4
+ *             ratings:
+ *               - _id: 5f7d6c6b6e4f0b0017e9b3f4
+ *                 rating: 5
+ *                 user_id: 5f7d6c6b6e4f0b0017e9b3f4
+ *                 recipe_id: 5f7d6c6b6e4f0b0017e9b3f4
+ *                 poster: Alvaro
+ *       '401':
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: The message of the response
+ *             type: object
+ *       '500':
+ *         description: Internal Server Error. Something went wrong.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: The error message.
  * /recipes/user/{username}:
  *   get:
  *     summary: Get a list of a user's recipes by their username
@@ -786,6 +856,98 @@ router.get('/stats', authMiddleware, async function (req, res, next) {
     avgPreparationTime,
     topContributors,
   })
+})
+
+// GET trending recipes
+router.get('/trending', authMiddleware, async function (req, res, next) {
+  try {
+    const limit = parseInt(req.query.limit) || 5
+
+    // Get ratings for the last month
+    const currentDate = new Date()
+    const lastMonthDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() - 1,
+      1,
+    )
+    const currentMonthDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      1,
+    )
+
+    const ratingsLastMonth = await Rating.find({
+      created_at: { $gte: lastMonthDate, $lt: currentMonthDate },
+    }).lean()
+
+    // Group ratings by recipe ID
+    const ratingsByRecipeLastMonth = ratingsLastMonth.reduce((acc, rating) => {
+      if (!acc[rating.recipe_id]) {
+        acc[rating.recipe_id] = []
+      }
+      acc[rating.recipe_id].push(rating)
+      return acc
+    }, {})
+
+    // Calculate average rating for each recipe in the last month
+    const avgRatingLastMonth = {}
+    for (const recipeId in ratingsByRecipeLastMonth) {
+      const ratings = ratingsByRecipeLastMonth[recipeId]
+      const avgScore =
+        ratings.reduce((acc, rating) => acc + rating.score, 0) / ratings.length
+      avgRatingLastMonth[recipeId] = avgScore
+    }
+
+    // Calculate average rating for each recipe in the current month
+    console.log('ratingsLastMonth', ratingsLastMonth)
+    console.log(currentMonthDate)
+    const ratingsCurrentMonth = await Rating.find({
+      created_at: { $gte: currentMonthDate },
+    }).lean()
+    console.log('ratingsCurrentMonth', ratingsCurrentMonth)
+
+    const ratingsByRecipeCurrentMonth = ratingsCurrentMonth.reduce(
+      (acc, rating) => {
+        if (!acc[rating.recipe_id]) {
+          acc[rating.recipe_id] = []
+        }
+        acc[rating.recipe_id].push(rating)
+        return acc
+      },
+      {},
+    )
+
+    // Calculate the difference in average rating between the last month and the current month
+    const ratingDiff = await Promise.all(
+      Object.keys(ratingsByRecipeCurrentMonth).map(async (recipeId) => {
+        const ratings = ratingsByRecipeCurrentMonth[recipeId]
+        const avgScore =
+          ratings.reduce((acc, rating) => acc + rating.score, 0) /
+          ratings.length
+        const change = avgScore - (avgRatingLastMonth[recipeId] || 0)
+        return { recipeId, change }
+      }),
+    )
+
+    // Sort recipes by change in popularity
+    const trendingRecipes = ratingDiff
+      .sort((a, b) => b.change - a.change)
+      .slice(0, limit)
+
+    // Fetch recipe details for trending recipes
+    const recipes = await Promise.all(
+      trendingRecipes.map(async (recipe) => {
+        const recipeObject = await Recipe.findById(recipe.recipeId)
+        const recipeDetails = await getRecipeDetails(recipeObject.toObject())
+        return { ...recipeDetails, change: recipe.change }
+      }),
+    )
+
+    res.json(recipes)
+  } catch (error) {
+    console.error('Error fetching trending recipes:', error)
+    res.status(500).json({ message: 'Something went wrong' })
+  }
 })
 
 // GET /recipes/user/:id - Get a list of a user's recipes by their ID.
