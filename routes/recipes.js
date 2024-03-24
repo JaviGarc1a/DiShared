@@ -899,12 +899,9 @@ router.get('/trending', authMiddleware, async function (req, res, next) {
     }
 
     // Calculate average rating for each recipe in the current month
-    console.log('ratingsLastMonth', ratingsLastMonth)
-    console.log(currentMonthDate)
     const ratingsCurrentMonth = await Rating.find({
       created_at: { $gte: currentMonthDate },
     }).lean()
-    console.log('ratingsCurrentMonth', ratingsCurrentMonth)
 
     const ratingsByRecipeCurrentMonth = ratingsCurrentMonth.reduce(
       (acc, rating) => {
@@ -1045,7 +1042,6 @@ router.get('/:id', recipeExistMiddleware, async function (req, res, next) {
 
     res.json(recipe)
   } catch (err) {
-    console.log(err)
     return res.status(500).json({ message: 'Something went wrong' })
   }
 })
