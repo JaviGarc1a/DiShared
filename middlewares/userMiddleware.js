@@ -1,5 +1,6 @@
 const Recipe = require('../models/recipe')
 const Rating = require('../models/rating')
+const User = require('../models/user')
 
 const userRecipeOwnershipMiddleware = async (req, res, next) => {
   // Check if the user is the owner of the recipe
@@ -23,7 +24,20 @@ const userRatingOwnershipMiddleware = async (req, res, next) => {
   next()
 }
 
+const userExistMiddleware = async (req, res, next) => {
+  // Check if the user is the owner of the recipe
+  const user =
+    (await User.findOne({ email: req.body.email })) ||
+    (await User.findOne({ username: req.body.username }))
+  if (user) {
+    return res.status(404).json({ message: 'Username or email already exist.' })
+  }
+  req.user = user
+  next()
+}
+
 module.exports = {
   userRecipeOwnershipMiddleware,
   userRatingOwnershipMiddleware,
+  userExistMiddleware,
 }
