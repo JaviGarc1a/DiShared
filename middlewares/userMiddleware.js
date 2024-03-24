@@ -55,8 +55,7 @@ const userNotExistMiddleware = async (req, res, next) => {
 const userOwnershipMiddleware = async (req, res, next) => {
   // Check if the user is the owner of the user
   const user = await User.findById(req.params.id)
-  const userRequest = await User.findById(req.userId)
-  if (req.userId !== user._id.toString() && userRequest.role !== 'admin') {
+  if (req.userId !== user._id.toString()) {
     return res
       .status(403)
       .json({ message: 'Forbidden. You are not the owner of the user.' })
