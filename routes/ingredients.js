@@ -204,7 +204,7 @@ const authMiddleware = require('../middlewares/authMiddleware')
 const Ingredient = require('../models/ingredient')
 
 /* GET ingredients listing. */
-router.get('/', async function (req, res) {
+router.get('/', authMiddleware, async function (req, res) {
   try {
     // Get ingredients from the database
     const ingredients = await Ingredient.find()
