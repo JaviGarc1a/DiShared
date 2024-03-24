@@ -37,10 +37,17 @@ const RatingSchema = new Schema({
   comment: String,
   recipe_id: { type: Schema.Types.ObjectId, ref: 'Recipe', inmutable: true },
   user_id: { type: Schema.Types.ObjectId, ref: 'User', inmutable: true },
+  createdAt: { type: Date, default: Date.now },
 })
 
 // Define one rating on a recipe per user
 RatingSchema.index({ recipe_id: 1, user_id: 1 }, { unique: true })
+
+// create "CreatedAt" field on save
+RatingSchema.pre('save', function (next) {
+  this.createdAt = new Date()
+  next()
+})
 
 const Rating = mongoose.model('Rating', RatingSchema)
 

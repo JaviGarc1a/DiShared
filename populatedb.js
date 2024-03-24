@@ -60,7 +60,7 @@ async function userCreate(
   email,
   password,
   role,
-  recipes = []
+  recipes = [],
 ) {
   const user = new User({ username, email, password, role, recipes })
   await user.save()
@@ -87,7 +87,7 @@ async function recipeCreate(
   preparation_time,
   difficulty,
   user_id,
-  ingredients
+  ingredients,
 ) {
   const recipe = new Recipe({
     title,
@@ -126,7 +126,7 @@ async function createRecipes() {
         { ingredient_id: ingredients[5], quantity: 2, unit: 'unit' },
         { ingredient_id: ingredients[0], quantity: 1, unit: 'grams' },
         { ingredient_id: ingredients[1], quantity: 1, unit: 'grams' },
-      ]
+      ],
     ),
     recipeCreate(
       1,
@@ -146,7 +146,7 @@ async function createRecipes() {
       5,
       'easy',
       users[1],
-      [{ ingredient_id: ingredients[5], quantity: 1, unit: 'unit' }]
+      [{ ingredient_id: ingredients[5], quantity: 1, unit: 'unit' }],
     ),
     recipeCreate(
       2,
@@ -166,7 +166,7 @@ async function createRecipes() {
       [
         { ingredient_id: ingredients[5], quantity: 2, unit: 'unit' },
         { ingredient_id: ingredients[6], quantity: 1, unit: 'teaspoon' },
-      ]
+      ],
     ),
     recipeCreate(
       3,
@@ -184,7 +184,7 @@ async function createRecipes() {
       5,
       'easy',
       users[3],
-      [{ ingredient_id: ingredients[5], quantity: 2, unit: 'unit' }]
+      [{ ingredient_id: ingredients[5], quantity: 2, unit: 'unit' }],
     ),
     recipeCreate(
       4,
@@ -201,7 +201,7 @@ async function createRecipes() {
       5,
       'easy',
       users[4],
-      [{ ingredient_id: ingredients[5], quantity: 2, unit: 'unit' }]
+      [{ ingredient_id: ingredients[5], quantity: 2, unit: 'unit' }],
     ),
     recipeCreate(
       5,
@@ -226,7 +226,7 @@ async function createRecipes() {
         { ingredient_id: ingredients[5], quantity: 2, unit: 'unit' },
         { ingredient_id: ingredients[0], quantity: 1, unit: 'grams' },
         { ingredient_id: ingredients[1], quantity: 1, unit: 'grams' },
-      ]
+      ],
     ),
   ])
 }
@@ -257,11 +257,11 @@ async function ratingCreate(index, score, comment, user_id, recipe_id) {
 
 async function createRatings() {
   await Promise.all([
-    ratingCreate(0, 5, 'Delicious!', users[0], recipes[0]),
-    ratingCreate(1, 4, 'Yummy!', users[1], recipes[1]),
-    ratingCreate(2, 3, 'Not too bad', users[2], recipes[2]),
-    ratingCreate(3, 2, 'Could be better', users[3], recipes[3]),
-    ratingCreate(4, 1, 'Not my favorite', users[4], recipes[4]),
-    ratingCreate(5, 0, 'Disgusting', users[5], recipes[5]),
+    ratingCreate(0, 5, 'Delicious!', users[0], recipes[0], new Date()),
+    ratingCreate(1, 4, 'Yummy!', users[1], recipes[1], new Date()),
+    ratingCreate(2, 3, 'Not too bad', users[2], recipes[2], new Date()),
+    ratingCreate(3, 2, 'Could be better', users[3], recipes[3], new Date()),
+    ratingCreate(4, 1, 'Not my favorite', users[4], recipes[4], new Date()),
+    ratingCreate(5, 0, 'Disgusting', users[5], recipes[5], new Date()),
   ])
 }
