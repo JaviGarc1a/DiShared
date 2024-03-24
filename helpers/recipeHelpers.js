@@ -12,7 +12,6 @@ async function getRecipeDetails(recipe) {
   if (ratings.length > 0) {
     recipe.avgRating = ratings.reduce((acc, rating) => acc + rating.score, 0)
     recipe.avgRating /= ratings.length
-    recipe.avgRating = ratings
     const users = await User.find(
       { _id: { $in: ratings.map((r) => r.user_id) } },
       '-password',
