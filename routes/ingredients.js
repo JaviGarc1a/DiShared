@@ -200,7 +200,10 @@
 var express = require('express')
 var router = express.Router()
 
-const { authMiddleware } = require('../middlewares/authMiddleware')
+const {
+  authMiddleware,
+  adminMiddleware,
+} = require('../middlewares/authMiddleware')
 const {
   ingredientExistMiddleware,
   ingredientNotExistMiddleware,
@@ -262,6 +265,7 @@ router.put(
   '/:id',
   authMiddleware,
   ingredientExistMiddleware,
+  adminMiddleware,
   async function (req, res) {
     const { name } = req.body
 
@@ -279,17 +283,22 @@ router.put(
 )
 
 /* DELETE ingredient by ID */
-router.delete('/:id', authMiddleware, async function (req, res) {
-  try {
-    const deleteIngredient = await Ingredient.findByIdAndDelete(req.params.id)
-    if (deleteIngredient) {
-      res.status(200).json({ message: 'Ingredient deleted' })
-    } else {
-      res.status(404).json({ message: 'Ingredient not found' })
+router.delete(
+  '/:id',
+  authMiddleware,
+  adminMiddleware,
+  async function (req, res) {
+    try {
+      const deleteIngredient = await Ingredient.findByIdAndDelete(req.params.id)
+      if (deleteIngredient) {
+        res.status(200).json({ message: 'Ingredient deleted' })
+      } else {
+        res.status(404).json({ message: 'Ingredient not found' })
+      }
+    } catch (error) {
+      return res.status(500).json({ message: 'Something went wrong' })
     }
-  } catch (error) {
-    return res.status(500).json({ message: 'Something went wrong' })
   }
-})
+)
 
 module.exports = router

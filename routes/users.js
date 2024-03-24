@@ -210,7 +210,10 @@
 var express = require('express')
 var router = express.Router()
 
-const { authMiddleware } = require('../middlewares/authMiddleware')
+const {
+  authMiddleware,
+  adminMiddleware,
+} = require('../middlewares/authMiddleware')
 const {
   userExistMiddleware,
   userOwnershipMiddleware,
@@ -284,6 +287,7 @@ router.put(
   authMiddleware,
   userNotExistMiddleware,
   userOwnershipMiddleware,
+  adminMiddleware,
   async function (req, res) {
     const { username, email, password } = req.body
 
@@ -305,6 +309,7 @@ router.delete(
   '/:id',
   authMiddleware,
   userOwnershipMiddleware,
+  adminMiddleware,
   async function (req, res) {
     try {
       const deleteUser = await User.findByIdAndDelete(req.params.id)
