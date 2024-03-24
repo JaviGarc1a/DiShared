@@ -30,7 +30,7 @@ const userExistMiddleware = async (req, res, next) => {
     (await User.findOne({ email: req.body.email })) ||
     (await User.findOne({ username: req.body.username }))
   if (user) {
-    return res.status(404).json({ message: 'Username or email already exist.' })
+    return res.status(409).json({ message: 'Username or email already exist.' })
   }
   req.user = user
   next()
