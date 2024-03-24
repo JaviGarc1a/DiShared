@@ -215,4 +215,18 @@ router.get('/', async function (req, res) {
   }
 })
 
+/* POST create ingredient */
+router.post('/', authMiddleware, async function (req, res) {
+  const { name } = req.body
+
+  try {
+    const ingredient = new Ingredient({ name })
+    await ingredient.save()
+
+    res.json(ingredient)
+  } catch (error) {
+    res.status(500).json({ message: 'Something went wrong' })
+  }
+})
+
 module.exports = router
