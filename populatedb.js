@@ -54,8 +54,15 @@ async function createIngredients() {
   ])
 }
 
-async function userCreate(index, username, email, password, recipes = []) {
-  const user = new User({ username, email, password, recipes })
+async function userCreate(
+  index,
+  username,
+  email,
+  password,
+  role,
+  recipes = []
+) {
+  const user = new User({ username, email, password, role, recipes })
   await user.save()
   users[index] = user
   console.log('Debug: User created')
@@ -63,7 +70,7 @@ async function userCreate(index, username, email, password, recipes = []) {
 
 async function createUsers() {
   await Promise.all([
-    userCreate(0, 'Alvaro', 'alvaro@gmail.com', 'Password123.'),
+    userCreate(0, 'Alvaro', 'alvaro@gmail.com', 'Password123.', 'admin'),
     userCreate(1, 'Bobby', 'bobby@gmail.com', 'Password123.'),
     userCreate(2, 'Charlie', 'charlie@gmail.com', 'Password123.'),
     userCreate(3, 'Diana', 'diana@gmail.com', 'Password123.'),
