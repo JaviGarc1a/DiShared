@@ -259,4 +259,18 @@ router.put('/:id', authMiddleware, async function (req, res) {
   }
 })
 
+/* DELETE ingredient by ID */
+router.delete('/:id', authMiddleware, async function (req, res) {
+  try {
+    const deleteIngredient = await Ingredient.findByIdAndDelete(req.params.id)
+    if (deleteIngredient) {
+      res.status(200).json({ message: 'Ingredient deleted' })
+    } else {
+      res.status(404).json({ message: 'Ingredient not found' })
+    }
+  } catch (error) {
+    return res.status(500).json({ message: 'Something went wrong' })
+  }
+})
+
 module.exports = router
