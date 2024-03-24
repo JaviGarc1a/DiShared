@@ -384,6 +384,85 @@
  *                   type: string
  *                   description: The message of the response
  *             type: object
+ * /recipes/user/{username}:
+ *   get:
+ *     summary: Get a list of a user's recipes by their username
+ *     tags: [Recipes]
+ *     parameters:
+ *       - in: path
+ *         name: username
+ *         required: true
+ *         description: Username of the user whose recipes to retrieve
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: A list of the user's recipes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Recipe'
+ *         example:
+ *           - _id: 5f7d6c6b6e4f0b0017e9b3f4
+ *             title: Chocolate Cake
+ *             description: A delicious chocolate cake
+ *             steps:
+ *               - Preheat the oven to 350°F
+ *               - Mix the ingredients
+ *               - Bake for 30 minutes
+ *             preparation_time: 30
+ *             difficulty: easy
+ *             user_id: 5f7d6c6b6e4f0b0017e9b3f4
+ *             ingredients:
+ *               - ingredient_id: 5f7d6c6b6e4f0b0017e9b3f4
+ *                 quantity: 2
+ *                 unit: cups
+ *                 name: flour
+ *               - ingredient_id: 5f7d6c6b6e4f0b0017e9b3f4
+ *                 quantity: 1
+ *                 unit: tablespoon
+ *                 name: sugar
+ *             user:
+ *               _id: 5f7d6c6b6e4f0b0017e9b3f4
+ *               username: Alvaro
+ *               email: alvaro@gmail.com
+ *               recipes:
+ *                 - 5f7d6c6b6e4f0b0017e9b3f4
+ *             ratings:
+ *               - _id: 5f7d6c6b6e4f0b0017e9b3f4
+ *                 rating: 5
+ *                 user_id: 5f7d6c6b6e4f0b0017e9b3f4
+ *                 recipe_id: 5f7d6c6b6e4f0b0017e9b3f4
+ *                 poster: Alvaro
+ *       '400':
+ *         description: Bad Request, username is required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: The message of the response
+ *       '404':
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: The message of the response
+ *       '500':
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: The message of the response
  */
 
 var express = require('express')
@@ -546,6 +625,7 @@ router.get('/:id', recipeExistMiddleware, async function (req, res, next) {
 
     res.json(recipe)
   } catch (err) {
+    console.log(err)
     return res.status(500).json({ message: 'Something went wrong' })
   }
 })
@@ -678,12 +758,18 @@ router.get('/user/:username', authMiddleware, async function (req, res, next) {
       return res.status(400).json({ message: 'User ID is required' })
     }
 
-    const user = await User.find({ username: username })
+    const user = await User.findOne({ username: username })
     if (!user) {
       return res.status(404).json({ message: 'User not found' })
     }
 
-    const recipes = await Recipe.find({ user_id: user._id })
+    var recipes = await Recipe.find({ user_id: user._id })
+
+    recipes = await Promise.all(
+      recipes.map(async (recipe) => {
+        return await getRecipeDetails(recipe.toObject())
+      }),
+    )
 
     res.json(recipes)
   } catch (err) {
