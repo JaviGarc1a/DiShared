@@ -1203,6 +1203,7 @@ router.get('/similar/:id', recipeExistMiddleware, async function (req, res) {
     const ingredients = recipe.ingredients.map((i) => i.ingredient_id)
 
     const similarRecipes = await Recipe.find({
+      _id: { $ne: recipe._id },
       ingredients: {
         $elemMatch: {
           ingredient_id: { $in: ingredients },
