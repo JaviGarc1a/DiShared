@@ -9,6 +9,7 @@ var usersRouter = require('./routes/users')
 var authRouter = require('./routes/auth')
 var recipesRouter = require('./routes/recipes')
 var ratingsRouter = require('./routes/ratings')
+var ingredientsRouter = require('./routes/ingredients')
 
 var app = express()
 
@@ -58,7 +59,7 @@ const specs = swaggerJsdoc(options)
 app.use(
   '/api-docs',
   swaggerUi.serve,
-  swaggerUi.setup(specs, { explorer: true }),
+  swaggerUi.setup(specs, { explorer: true })
 )
 
 // view engine setup
@@ -76,6 +77,7 @@ app.use('/users', usersRouter)
 app.use('/auth', authRouter)
 app.use('/recipes', recipesRouter)
 app.use('/ratings', ratingsRouter)
+app.use('/ingredients', ingredientsRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
