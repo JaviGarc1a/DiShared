@@ -304,7 +304,6 @@ router.put(
 router.delete(
   '/:id',
   authMiddleware,
-  userNotExistMiddleware,
   userOwnershipMiddleware,
   async function (req, res) {
     try {
