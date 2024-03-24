@@ -266,6 +266,25 @@
  *                   type: string
  *                   description: The message of the response
  *             type: object
+ * /recipes/latest:
+ *   get:
+ *     summary: Returns the list of all the recipes
+ *     tags: [Recipes]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         description: Limit of recipes to retrieve
+ *         schema:
+ *           type: int
+ *     responses:
+ *       200:
+ *         description: The list of the Recipes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Recipe'
+ *             type: array
  * /recipes/popular:
  *   get:
  *     summary: Get X popular recipes
@@ -561,6 +580,17 @@ router.get('/', async function (req, res, next) {
   } else {
     const recipes = await Recipe.find()
     res.json(recipes)
+  }
+})
+
+// Get X latest recipes
+router.get('/latest', async function (req, res, next) {
+  try {
+    const limit = parseInt(req.query.limit) || 5
+    const recipes = await Recipe.find().sort({ _id: -1 }).limit(limit)
+    res.json(recipes)
+  } catch (err) {
+    return res.status(500).json({ message: 'Something went wrong' })
   }
 })
 
