@@ -203,6 +203,7 @@ var router = express.Router()
 const authMiddleware = require('../middlewares/authMiddleware')
 const {
   ingredientExistMiddleware,
+  ingredientNotExistMiddleware,
 } = require('../middlewares/ingredientMiddleware')
 
 const Ingredient = require('../models/ingredient')
@@ -239,18 +240,22 @@ router.post(
 )
 
 /* GET ingredient by ID */
-router.get('/:id', authMiddleware, async function (req, res) {
-  const { id } = req.params
+router.get(
+  '/:id',
+  authMiddleware,
+  ingredientNotExistMiddleware,
+  async function (req, res) {
+    const { id } = req.params
 
-  try {
-    // Get ingredient from the database
-    const ingredient = await Ingredient.findById(id)
-
-    res.json(ingredient)
-  } catch (error) {
-    return res.status(500).json({ message: 'Something went wrong' })
+    try {
+      // Get ingredient from the database
+      const ingredient = await Ingredient.findById(id)
+      res.json(ingredient)
+    } catch (error) {
+      return res.status(500).json({ message: 'Something went wrong' })
+    }
   }
-})
+)
 
 /* PUT update ingredient by ID */
 router.put(
