@@ -253,20 +253,25 @@ router.get('/:id', authMiddleware, async function (req, res) {
 })
 
 /* PUT update ingredient by ID */
-router.put('/:id', authMiddleware, async function (req, res) {
-  const { name } = req.body
+router.put(
+  '/:id',
+  authMiddleware,
+  ingredientExistMiddleware,
+  async function (req, res) {
+    const { name } = req.body
 
-  try {
-    const updateIngredient = await Ingredient.findByIdAndUpdate(
-      req.params.id,
-      { name },
-      { new: true }
-    )
-    res.status(200).json(updateIngredient)
-  } catch (error) {
-    return res.status(500).json({ message: 'Something went wrong' })
+    try {
+      const updateIngredient = await Ingredient.findByIdAndUpdate(
+        req.params.id,
+        { name },
+        { new: true }
+      )
+      res.status(200).json(updateIngredient)
+    } catch (error) {
+      return res.status(500).json({ message: 'Something went wrong' })
+    }
   }
-})
+)
 
 /* DELETE ingredient by ID */
 router.delete('/:id', authMiddleware, async function (req, res) {
