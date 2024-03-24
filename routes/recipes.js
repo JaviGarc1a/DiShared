@@ -69,6 +69,7 @@
  *             steps: ["Preheat the oven to 350°F", "Mix the ingredients", "Bake for 30 minutes"]
  *             preparation_time: 30
  *             difficulty: easy
+ *             category: dessert
  *             user_id: 5f7d6c6b6e4f0b0017e9b3f4
  *             ingredients: [
  *               {
@@ -97,6 +98,7 @@
  *                 steps: ["Preheat the oven to 350°F", "Mix the ingredients", "Bake for 30 minutes"]
  *                 preparation_time: 30
  *                 difficulty: easy
+ *                 category: dessert
  *                 user_id: 5f7d6c6b6e4f0b0017e9b3f4
  *                 ingredients: [
  *                   {
@@ -138,6 +140,7 @@
  *                 steps: ["Preheat the oven to 350°F", "Mix the ingredients", "Bake for 30 minutes"]
  *                 preparation_time: 30
  *                 difficulty: easy
+ *                 category: dessert
  *                 user_id: 5f7d6c6b6e4f0b0017e9b3f4
  *                 ingredients: [
  *                   {
@@ -214,6 +217,7 @@
  *             steps: ["Preheat the oven to 350°F", "Mix the ingredients", "Bake for 30 minutes"]
  *             preparation_time: 30
  *             difficulty: easy
+ *             category: dessert
  *             user_id: 5f7d6c6b6e4f0b0017e9b3f4
  *             ingredients: [
  *               {
@@ -242,6 +246,7 @@
  *                 steps: ["Preheat the oven to 350°F", "Mix the ingredients", "Bake for 30 minutes"]
  *                 preparation_time: 30
  *                 difficulty: easy
+ *                 category: dessert
  *                 user_id: 5f7d6c6b6e4f0b0017e9b3f4
  *                 ingredients: [
  *                   {
@@ -475,6 +480,7 @@
  *               - Bake for 30 minutes
  *             preparation_time: 30
  *             difficulty: easy
+ *             category: dessert
  *             user_id: 5f7d6c6b6e4f0b0017e9b3f4
  *             ingredients:
  *               - ingredient_id: 5f7d6c6b6e4f0b0017e9b3f4
@@ -546,6 +552,7 @@
  *               - Bake for 30 minutes
  *             preparation_time: 30
  *             difficulty: easy
+ *             category: dessert
  *             user_id: 5f7d6c6b6e4f0b0017e9b3f4
  *             ingredients:
  *               - ingredient_id: 5f7d6c6b6e4f0b0017e9b3f4
