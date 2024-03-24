@@ -229,4 +229,18 @@ router.post('/', authMiddleware, async function (req, res) {
   }
 })
 
+/* GET ingredient by ID */
+router.get('/:id', authMiddleware, async function (req, res) {
+  const { id } = req.params
+
+  try {
+    // Get ingredient from the database
+    const ingredient = await Ingredient.findById(id)
+
+    res.json(ingredient)
+  } catch (error) {
+    return res.status(500).json({ message: 'Something went wrong' })
+  }
+})
+
 module.exports = router
