@@ -9,7 +9,7 @@ async function getRecipeDetails(recipe) {
 
   const ratings = await Rating.find({ recipe_id: recipe._id }).lean()
 
-  if (ratings) {
+  if (ratings.length > 0) {
     recipe.avgRating = ratings.reduce((acc, rating) => acc + rating.score, 0)
     recipe.avgRating /= ratings.length
     recipe.avgRating = ratings
@@ -18,7 +18,7 @@ async function getRecipeDetails(recipe) {
       '-password',
     )
     if (users) {
-      recipe.ratings = recipe.ratings.map((r) => {
+      recipe.ratings = ratings.map((r) => {
         const user = users.find((u) => u._id.equals(r.user_id))
         return {
           ...r,
@@ -26,6 +26,9 @@ async function getRecipeDetails(recipe) {
         }
       })
     }
+  } else {
+    recipe.avgRating = 0
+    recipe.ratings = []
   }
 
   const ingredients = await Ingredient.find({
