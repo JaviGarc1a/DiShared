@@ -395,6 +395,8 @@ const {
 } = require('../middlewares/userMiddleware')
 const { recipeExistMiddleware } = require('../middlewares/recipeMiddleware')
 
+const { getRecipeDetails } = require('../helpers/recipeHelpers')
+
 const Recipe = require('../models/recipe')
 const User = require('../models/user')
 const Ingredient = require('../models/ingredient')
@@ -457,7 +459,7 @@ router.get('/popular', async function (req, res, next) {
 })
 
 // GET recipes stats
-router.get('/stats', async function (req, res, next) {
+router.get('/stats', authMiddleware, async function (req, res, next) {
   const recipes = await Recipe.find().lean()
   const ratings = await Rating.find().lean()
 
@@ -538,46 +540,9 @@ router.get('/stats', async function (req, res, next) {
 // GET a recipe by ID
 router.get('/:id', recipeExistMiddleware, async function (req, res, next) {
   try {
-    const recipe = req.recipe.toObject()
+    var recipe = req.recipe.toObject()
 
-    const user = await User.findById(recipe.user_id).select('-password')
-
-    recipe.user = user ? user : { username: 'Deleted User' }
-
-    const ratings = await Rating.find({ recipe_id: recipe._id }).lean()
-
-    if (ratings) {
-      recipe.rating = ratings.reduce((acc, rating) => acc + rating.score, 0)
-      recipe.rating /= ratings.length
-      recipe.ratings = ratings
-      const users = await User.find(
-        { _id: { $in: ratings.map((r) => r.user_id) } },
-        '-password',
-      )
-      if (users) {
-        recipe.ratings = recipe.ratings.map((r) => {
-          const user = users.find((u) => u._id.equals(r.user_id))
-          return {
-            ...r,
-            poster: user ? user.username : { username: 'Deleted User' },
-          }
-        })
-      }
-    }
-
-    const ingredients = await Ingredient.find({
-      _id: { $in: recipe.ingredients.map((i) => i.ingredient_id) },
-    })
-
-    // Add the ingredient name to the recipe
-    if (ingredients) {
-      recipe.ingredients = recipe.ingredients.map((i) => {
-        const ingredient = ingredients.find((ing) =>
-          ing._id.equals(i.ingredient_id),
-        )
-        return { ...i, name: ingredient.name }
-      })
-    }
+    recipe = await getRecipeDetails(recipe)
 
     res.json(recipe)
   } catch (err) {
@@ -703,5 +668,27 @@ router.delete(
     }
   },
 )
+
+// GET /recipes/user/:id - Get a list of a user's recipes by their ID.
+router.get('/user/:username', authMiddleware, async function (req, res, next) {
+  try {
+    const username = req.params.username
+
+    if (!username) {
+      return res.status(400).json({ message: 'User ID is required' })
+    }
+
+    const user = await User.find({ username: username })
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    const recipes = await Recipe.find({ user_id: user._id })
+
+    res.json(recipes)
+  } catch (err) {
+    return res.status(500).json({ message: 'Something went wrong' })
+  }
+})
 
 module.exports = router
