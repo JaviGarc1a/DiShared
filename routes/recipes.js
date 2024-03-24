@@ -259,6 +259,36 @@
  *                   type: string
  *                   description: The message of the response
  *             type: object
+ * /recipes/popular:
+ *   get:
+ *     summary: Get X popular recipes
+ *     tags: [Recipes]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         description: Number of popular recipes to retrieve
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: A list of X popular recipes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Recipe'
+ *       '401':
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: The message of the response
+ *             type: object
  */
 
 var express = require('express')
@@ -281,6 +311,43 @@ router.get('/', async function (req, res, next) {
   res.json(recipes)
 })
 
+// GET X popular recipes
+router.get('/popular', async function (req, res, next) {
+  const limit = parseInt(req.query.limit) || 5
+  const ratings = await Rating.find().lean()
+  console.log(ratings)
+
+  // Group ratings by recipe_id
+  const ratingsByRecipe = ratings.reduce((acc, rating) => {
+    if (!acc[rating.recipe_id]) {
+      acc[rating.recipe_id] = []
+    }
+    acc[rating.recipe_id].push(rating)
+    return acc
+  }, {})
+
+  // Calculate average rating for each recipe
+  const recipeRatings = Object.keys(ratingsByRecipe).map((recipe_id) => {
+    const ratings = ratingsByRecipe[recipe_id]
+    const avgScore =
+      ratings.reduce((acc, rating) => acc + rating.score, 0) / ratings.length
+    return { recipe_id, avgScore }
+  })
+
+  // Sort by average rating
+  recipeRatings.sort((a, b) => b.avgScore - a.avgScore)
+
+  // Fetch recipe details
+  const popularRecipes = await Promise.all(
+    recipeRatings.slice(0, limit).map(async (recipeRating) => {
+      const recipe = await Recipe.findById(recipeRating.recipe_id)
+      return { ...recipe._doc, avgScore: recipeRating.avgScore }
+    }),
+  )
+
+  res.json(popularRecipes)
+})
+
 // GET a recipe by ID
 router.get('/:id', recipeExistMiddleware, async function (req, res, next) {
   try {
@@ -293,6 +360,8 @@ router.get('/:id', recipeExistMiddleware, async function (req, res, next) {
     const ratings = await Rating.find({ recipe_id: recipe._id }).lean()
 
     if (ratings) {
+      recipe.rating = ratings.reduce((acc, rating) => acc + rating.score, 0)
+      recipe.rating /= ratings.length
       recipe.ratings = ratings
       const users = await User.find(
         { _id: { $in: ratings.map((r) => r.user_id) } },
@@ -325,7 +394,6 @@ router.get('/:id', recipeExistMiddleware, async function (req, res, next) {
 
     res.json(recipe)
   } catch (err) {
-    console.log(err)
     return res.status(500).json({ message: 'Something went wrong' })
   }
 })
