@@ -289,6 +289,94 @@
  *                   type: string
  *                   description: The message of the response
  *             type: object
+ * /recipes/stats:
+ *   get:
+ *     summary: Retrieves various statistics about the recipes
+ *     tags: [Recipes]
+ *     responses:
+ *       '200':
+ *         description: Various statistics about the recipes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalRecipes:
+ *                   type: integer
+ *                   description: Total count of recipes
+ *                 totalRatings:
+ *                   type: integer
+ *                   description: Total count of ratings
+ *                 avgRating:
+ *                   type: number
+ *                   description: Average rating across all recipes
+ *                 ingredientsCount:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       ingredient:
+ *                         type: string
+ *                         description: Name of the ingredient
+ *                       count:
+ *                         type: integer
+ *                         description: Number of recipes containing the ingredient
+ *                   description: Count of recipes per ingredient
+ *                 avgIngredients:
+ *                   type: number
+ *                   description: Average number of ingredients per recipe
+ *                 recipesPerIngredient:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       ingredient:
+ *                         type: string
+ *                         description: Name of the ingredient
+ *                       count:
+ *                         type: integer
+ *                         description: Number of recipes containing the ingredient
+ *                   description: Count of recipes per ingredient
+ *                 recipesPerDifficulty:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       difficulty:
+ *                         type: string
+ *                         enum: [easy, medium, hard]
+ *                         description: Difficulty level of the recipe
+ *                       count:
+ *                         type: integer
+ *                         description: Number of recipes with the given difficulty level
+ *                   description: Count of recipes per difficulty level
+ *                 topContributors:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       user:
+ *                         type: string
+ *                         description: Username of the contributor
+ *                       count:
+ *                         type: integer
+ *                         description: Number of recipes contributed by the user
+ *                   description: Top contributors based on the number of recipes contributed
+ *                 avgPreparationTime:
+ *                   type: number
+ *                   description: Average preparation time across all recipes
+ *       '500':
+ *         description: Internal server error
+ *       '401':
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: The message of the response
+ *             type: object
  */
 
 var express = require('express')
@@ -346,6 +434,85 @@ router.get('/popular', async function (req, res, next) {
   )
 
   res.json(popularRecipes)
+})
+
+// GET recipes stats
+router.get('/stats', async function (req, res, next) {
+  const recipes = await Recipe.find().lean()
+  const ratings = await Rating.find().lean()
+
+  const totalRecipes = recipes.length
+  const totalRatings = ratings.length
+  const avgRating =
+    ratings.reduce((acc, rating) => acc + rating.score, 0) / totalRatings
+
+  // Top ingredients
+  const ingredients = await Ingredient.find()
+  const ingredientsCount = ingredients.map((ingredient) => {
+    const count = recipes.reduce((acc, recipe) => {
+      const hasIngredient = recipe.ingredients.find((i) =>
+        i.ingredient_id.equals(ingredient._id),
+      )
+      return acc + (hasIngredient ? 1 : 0)
+    }, 0)
+    return { ingredient: ingredient.name, count }
+  })
+  ingredientsCount.sort((a, b) => b.count - a.count)
+
+  // Avg number of ingredients per recipe
+  const avgIngredients =
+    recipes.reduce((acc, recipe) => acc + recipe.ingredients.length, 0) /
+    totalRecipes
+
+  // Recipes per ingredient
+  const recipesPerIngredient = ingredients.map((ingredient) => {
+    const count = recipes.reduce((acc, recipe) => {
+      const hasIngredient = recipe.ingredients.find((i) =>
+        i.ingredient_id.equals(ingredient._id),
+      )
+      return acc + (hasIngredient ? 1 : 0)
+    }, 0)
+    return { ingredient: ingredient.name, count }
+  })
+  recipesPerIngredient.sort((a, b) => b.count - a.count)
+
+  // Recipes per difficulty
+  const recipesPerDifficulty = ['easy', 'medium', 'hard'].map((difficulty) => {
+    const count = recipes.reduce(
+      (acc, recipe) => (recipe.difficulty === difficulty ? acc + 1 : acc),
+      0,
+    )
+    return { difficulty, count }
+  })
+  recipesPerDifficulty.sort((a, b) => b.count - a.count)
+
+  // Top contributors (number of recipes)
+  const users = await User.find()
+  const topContributors = users.map((user) => {
+    const count = recipes.reduce(
+      (acc, recipe) => (recipe.user_id.equals(user._id) ? acc + 1 : acc),
+      0,
+    )
+    return { user: user.username, count }
+  })
+  topContributors.sort((a, b) => b.count - a.count).slice(0, 3)
+
+  // Average preparation time
+  const avgPreparationTime =
+    recipes.reduce((acc, recipe) => acc + recipe.preparation_time, 0) /
+    totalRecipes
+
+  res.json({
+    totalRecipes,
+    totalRatings,
+    avgRating,
+    ingredientsCount,
+    avgIngredients,
+    recipesPerIngredient,
+    recipesPerDifficulty,
+    avgPreparationTime,
+    topContributors,
+  })
 })
 
 // GET a recipe by ID
