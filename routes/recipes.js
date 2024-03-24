@@ -567,20 +567,15 @@ const Rating = require('../models/rating')
 // GET all recipes
 router.get('/', async function (req, res, next) {
   const searchTerm = req.query.s || ''
-  if (searchTerm) {
-    // Define the search criteria
-    const searchCriteria = {
-      $or: [
-        { title: { $regex: searchTerm, $options: 'i' } }, // Search titles (case-insensitive)
-        { description: { $regex: searchTerm, $options: 'i' } }, // Search descriptions (case-insensitive)
-      ],
-    }
-    const recipes = await Recipe.find(searchCriteria)
-    res.json(recipes)
-  } else {
-    const recipes = await Recipe.find()
-    res.json(recipes)
+  // Define the search criteria
+  const searchCriteria = {
+    $or: [
+      { title: { $regex: searchTerm, $options: 'i' } }, // Search titles (case-insensitive)
+      { description: { $regex: searchTerm, $options: 'i' } }, // Search descriptions (case-insensitive)
+    ],
   }
+  const recipes = await Recipe.find(searchCriteria)
+  res.json(recipes)
 })
 
 // Get X latest recipes
@@ -742,7 +737,10 @@ router.get('/user/:username', authMiddleware, async function (req, res, next) {
 router.get('/wo-ingredients', authMiddleware, async function (req, res, next) {
   try {
     const ingredients = req.query.ings.map((ing) => ing.trim())
-    const ingredientsIds = await Ingredient.find({ name: { $in: ingredients } })
+    // find the ingredient by name case insensitive
+    const ingredientsIds = await Ingredient.find({
+      name: { $in: ingredients, $options: 'i' },
+    })
 
     var recipes = await Recipe.find({
       ingredients: {
@@ -769,7 +767,10 @@ router.get('/wo-ingredients', authMiddleware, async function (req, res, next) {
 router.get('/ingredients', authMiddleware, async function (req, res, next) {
   try {
     const ingredients = req.query.ings.map((ing) => ing.trim())
-    const ingredientsIds = await Ingredient.find({ name: { $in: ingredients } })
+    // find the ingredient by name case insensitive
+    const ingredientsIds = await Ingredient.find({
+      name: { $in: ingredients, $options: 'i' },
+    })
 
     var recipes = await Recipe.find({
       ingredients: {
@@ -817,7 +818,10 @@ router.post('/', authMiddleware, async function (req, res, next) {
 
   // Replace ingredient name with ingredient_id
   for (let i of ingredients) {
-    i.ingredient_id = await Ingredient.findOne({ name: i.name })
+    // Find the ingredient by name (case insensitive)
+    i.ingredient_id = await Ingredient.findOne({
+      name: { $regex: i.name, $options: 'i' },
+    })
     // Create a new ingredient if it doesn't exist
     if (!i.ingredient_id) {
       const ingredient = new Ingredient({ name: i.name })
