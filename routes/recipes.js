@@ -14,6 +14,25 @@
  *         description: Search term
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: minRating
+ *         required: false
+ *         description: Minimum rating
+ *         schema:
+ *           type: int
+ *       - in: query
+ *         name: maxRating
+ *         required: false
+ *         description: Maxinum rating
+ *         schema:
+ *           type: int
+ *       - in: query
+ *         name: difficulty
+ *         required: false
+ *         description: Maxinum rating
+ *         schema:
+ *           type: string
+ *           enum: [easy, medium, hard]
  *     responses:
  *       200:
  *         description: The list of the Recipes
@@ -567,15 +586,32 @@ const Rating = require('../models/rating')
 // GET all recipes
 router.get('/', async function (req, res, next) {
   const searchTerm = req.query.s || ''
+  const minRating = parseInt(req.query.minRating) || 0
+  const maxRating = parseInt(req.query.maxRating) || 5
+  const difficulty = req.query.difficulty || ''
+
+  const ratingFilter = await Rating.find({
+    score: { $gte: minRating, $lte: maxRating },
+  })
   // Define the search criteria
   const searchCriteria = {
     $or: [
       { title: { $regex: searchTerm, $options: 'i' } }, // Search titles (case-insensitive)
       { description: { $regex: searchTerm, $options: 'i' } }, // Search descriptions (case-insensitive)
     ],
+    difficulty: { $regex: difficulty, $options: 'i' }, // Search by difficulty (case-insensitive)
   }
+
   const recipes = await Recipe.find(searchCriteria)
-  res.json(recipes)
+
+  const filteredRecipes = recipes.filter((recipe) => {
+    const recipeRatings = ratingFilter.filter(
+      (rating) => rating.recipe_id.toString() === recipe._id.toString(),
+    )
+    return recipeRatings.length > 0
+  })
+
+  res.json(filteredRecipes)
 })
 
 // Get X latest recipes
