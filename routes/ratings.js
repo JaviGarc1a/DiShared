@@ -219,4 +219,20 @@ router.put(
   },
 )
 
+// DELETE a rating by ID
+router.delete(
+  '/:id',
+  authMiddleware,
+  ratingExistsMiddleware,
+  userRatingOwnershipMiddleware,
+  async function (req, res, next) {
+    try {
+      await Rating.findByIdAndDelete(req.params.id)
+      res.status(204).send()
+    } catch (error) {
+      res.status(500).json({ message: 'something went wrong' })
+    }
+  },
+)
+
 module.exports = router
