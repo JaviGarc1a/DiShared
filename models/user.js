@@ -37,10 +37,13 @@ const Schema = mongoose.Schema
 
 const bcrypt = require('bcrypt')
 
+const roles = ['user', 'admin']
+
 const UserSchema = new Schema({
   username: { type: String, unique: true, required: true },
   email: { type: String, unique: true, required: true },
   password: { type: String, required: true },
+  role: { type: String, enum: roles, default: 'user' },
   // List of recipes created by the user
   recipes: [{ type: Schema.Types.ObjectId, ref: 'Recipe' }],
 })
