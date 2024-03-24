@@ -27,6 +27,18 @@
  *         schema:
  *           type: int
  *       - in: query
+ *         name: minTime
+ *         required: false
+ *         description: Minimum preparation time
+ *         schema:
+ *           type: int
+ *       - in: query
+ *         name: maxTime
+ *         required: false
+ *         description: Maximum preparation time
+ *         schema:
+ *           type: int
+ *       - in: query
  *         name: difficulty
  *         required: false
  *         description: Maxinum rating
@@ -588,6 +600,8 @@ router.get('/', async function (req, res, next) {
   const searchTerm = req.query.s || ''
   const minRating = parseInt(req.query.minRating) || 0
   const maxRating = parseInt(req.query.maxRating) || 5
+  const timeMin = parseInt(req.query.timeMin) || 0
+  const timeMax = parseInt(req.query.timeMax) || Infinity
   const difficulty = req.query.difficulty || ''
 
   const ratingFilter = await Rating.find({
@@ -600,6 +614,7 @@ router.get('/', async function (req, res, next) {
       { description: { $regex: searchTerm, $options: 'i' } }, // Search descriptions (case-insensitive)
     ],
     difficulty: { $regex: difficulty, $options: 'i' }, // Search by difficulty (case-insensitive)
+    preparation_time: { $gte: timeMin, $lte: timeMax }, // Search by preparation time
   }
 
   const recipes = await Recipe.find(searchCriteria)
