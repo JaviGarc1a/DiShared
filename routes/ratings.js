@@ -139,7 +139,7 @@
 var express = require('express')
 var router = express.Router()
 
-const authMiddleware = require('../middlewares/authMiddleware')
+const { authMiddleware } = require('../middlewares/authMiddleware')
 const {
   userHasNoRatingForRecipeMiddleware,
 } = require('../middlewares/recipeMiddleware')
@@ -180,7 +180,7 @@ router.post(
     } catch (error) {
       res.status(400).json({ message: error.message })
     }
-  },
+  }
 )
 
 // GET a rating by ID
@@ -210,13 +210,13 @@ router.put(
       const rating = await Rating.findByIdAndUpdate(
         req.params.id,
         { score, comment },
-        { new: true },
+        { new: true }
       )
       res.json(rating)
     } catch (error) {
       res.status(400).json({ message: error.message })
     }
-  },
+  }
 )
 
 // DELETE a rating by ID
@@ -232,7 +232,7 @@ router.delete(
     } catch (error) {
       res.status(500).json({ message: 'something went wrong' })
     }
-  },
+  }
 )
 
 module.exports = router
