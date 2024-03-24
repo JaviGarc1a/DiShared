@@ -201,6 +201,10 @@ var express = require('express')
 var router = express.Router()
 
 const authMiddleware = require('../middlewares/authMiddleware')
+const {
+  ingredientExistMiddleware,
+} = require('../middlewares/ingredientMiddleware')
+
 const Ingredient = require('../models/ingredient')
 
 /* GET ingredients listing. */
@@ -216,18 +220,23 @@ router.get('/', authMiddleware, async function (req, res) {
 })
 
 /* POST create ingredient */
-router.post('/', authMiddleware, async function (req, res) {
-  const { name } = req.body
+router.post(
+  '/',
+  authMiddleware,
+  ingredientExistMiddleware,
+  async function (req, res) {
+    const { name } = req.body
 
-  try {
-    const ingredient = new Ingredient({ name })
-    await ingredient.save()
+    try {
+      const ingredient = new Ingredient({ name })
+      await ingredient.save()
 
-    res.json(ingredient)
-  } catch (error) {
-    res.status(500).json({ message: 'Something went wrong' })
+      res.json(ingredient)
+    } catch (error) {
+      res.status(500).json({ message: 'Something went wrong' })
+    }
   }
-})
+)
 
 /* GET ingredient by ID */
 router.get('/:id', authMiddleware, async function (req, res) {
