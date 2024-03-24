@@ -15,7 +15,6 @@ const userHasNoRatingForRecipeMiddleware = async (req, res, next) => {
   const recipe_id = req.body.recipe_id
   const user_id = req.userId
 
-  console.log('recipe_id', recipe_id)
   const recipe = await Recipe.findById(recipe_id)
   if (!recipe) {
     return res.status(404).json({ message: 'Recipe not found.' })

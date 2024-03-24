@@ -87,6 +87,10 @@
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/Rating'
+ *           type: object
+ *           example:
+ *             score: 4
+ *             comment: "Great recipe!"
  *     responses:
  *       '200':
  *         description: Rating updated successfully
@@ -140,6 +144,9 @@ const {
   userHasNoRatingForRecipeMiddleware,
 } = require('../middlewares/recipeMiddleware')
 const { ratingExistsMiddleware } = require('../middlewares/ratingMiddleware')
+const {
+  userRatingOwnershipMiddleware,
+} = require('../middlewares/userMiddleware')
 
 const Rating = require('../models/rating')
 const Recipe = require('../models/recipe')
@@ -190,5 +197,26 @@ router.get('/:id', ratingExistsMiddleware, async function (req, res, next) {
 
   res.json(rating)
 })
+
+// PUT update a rating by ID
+router.put(
+  '/:id',
+  authMiddleware,
+  ratingExistsMiddleware,
+  userRatingOwnershipMiddleware,
+  async function (req, res, next) {
+    try {
+      const { score, comment } = req.body
+      const rating = await Rating.findByIdAndUpdate(
+        req.params.id,
+        { score, comment },
+        { new: true },
+      )
+      res.json(rating)
+    } catch (error) {
+      res.status(400).json({ message: error.message })
+    }
+  },
+)
 
 module.exports = router
