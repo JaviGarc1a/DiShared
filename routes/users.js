@@ -211,7 +211,10 @@ var express = require('express')
 var router = express.Router()
 
 const authMiddleware = require('../middlewares/authMiddleware')
-const { userExistMiddleware } = require('../middlewares/userMiddleware')
+const {
+  userExistMiddleware,
+  userOwnershipMiddleware,
+} = require('../middlewares/userMiddleware')
 
 const User = require('../models/user')
 const { getUserRecipes } = require('../helpers/userHelpers')
@@ -270,33 +273,45 @@ router.get('/:id', authMiddleware, async function (req, res) {
 })
 
 /* PUT update user by ID */
-router.put('/:id', authMiddleware, async function (req, res) {
-  const { username, email, password } = req.body
+router.put(
+  '/:id',
+  authMiddleware,
+  userExistMiddleware,
+  userOwnershipMiddleware,
+  async function (req, res) {
+    const { username, email, password } = req.body
 
-  try {
-    const updateUser = await User.findByIdAndUpdate(
-      req.params.id,
-      { username, email, password },
-      { new: true }
-    )
-    res.status(200).json(updateUser)
-  } catch (error) {
-    return res.status(500).json({ message: 'Something went wrong' })
+    try {
+      const updateUser = await User.findByIdAndUpdate(
+        req.params.id,
+        { username, email, password },
+        { new: true }
+      )
+      res.status(200).json(updateUser)
+    } catch (error) {
+      return res.status(500).json({ message: 'Something went wrong' })
+    }
   }
-})
+)
 
 /* DELETE user by ID */
-router.delete('/:id', authMiddleware, async function (req, res) {
-  try {
-    const deleteUser = await User.findByIdAndDelete(req.params.id)
-    if (deleteUser) {
-      res.status(200).json({ message: 'User deleted' })
-    } else {
-      res.status(404).json({ message: 'User not found' })
+router.delete(
+  '/:id',
+  authMiddleware,
+  userExistMiddleware,
+  userOwnershipMiddleware,
+  async function (req, res) {
+    try {
+      const deleteUser = await User.findByIdAndDelete(req.params.id)
+      if (deleteUser) {
+        res.status(200).json({ message: 'User deleted' })
+      } else {
+        res.status(404).json({ message: 'User not found' })
+      }
+    } catch (error) {
+      return res.status(500).json({ message: 'Something went wrong' })
     }
-  } catch (error) {
-    return res.status(500).json({ message: 'Something went wrong' })
   }
-})
+)
 
 module.exports = router
