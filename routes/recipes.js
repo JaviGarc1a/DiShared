@@ -694,6 +694,38 @@
  *                 message:
  *                   type: string
  *                   description: The message of the response
+ * /recipes/user/{id}/category/{category}:
+ *   get:
+ *     summary: Get recipes by user and category
+ *     tags: [Recipes]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Id of the user
+ *         example: 66008d36779401ccf7b26af3
+ *       - in: path
+ *         name: category
+ *         required: true
+ *         description: Category of the recipe
+ *         example: dessert
+ *     responses:
+ *       '200':
+ *         description: A list of recipes by the user and category
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Recipe'
+ *             type: array
+ *       '500':
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: The message of the response
  */
 
 var express = require('express')
@@ -702,6 +734,7 @@ var router = express.Router()
 const { authMiddleware } = require('../middlewares/authMiddleware')
 const {
   userRecipeOwnershipMiddleware,
+  userNotExistMiddleware,
 } = require('../middlewares/userMiddleware')
 const { recipeExistMiddleware } = require('../middlewares/recipeMiddleware')
 
@@ -1226,5 +1259,26 @@ router.get('/similar/:id', recipeExistMiddleware, async function (req, res) {
     return res.status(500).json({ message: 'Something went wrong' })
   }
 })
+
+// GET recipes by user and category
+router.get(
+  '/user/:id/category/:category',
+  authMiddleware,
+  userNotExistMiddleware,
+  async function (req, res) {
+    try {
+      const user = await User.findById(req.params.id)
+
+      const recipes = await Recipe.find({
+        user_id: user._id,
+        category: req.params.category,
+      })
+
+      res.json(recipes)
+    } catch (err) {
+      return res.status(500).json({ message: 'Something went wrong' })
+    }
+  }
+)
 
 module.exports = router
