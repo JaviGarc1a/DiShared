@@ -211,6 +211,7 @@ var express = require('express')
 var router = express.Router()
 
 const authMiddleware = require('../middlewares/authMiddleware')
+const { userExistMiddleware } = require('../middlewares/userMiddleware')
 
 const User = require('../models/user')
 const { getUserRecipes } = require('../helpers/userHelpers')
@@ -237,7 +238,7 @@ router.get('/', async function (req, res) {
 })
 
 /* POST create user */
-router.post('/', async function (req, res) {
+router.post('/', userExistMiddleware, async function (req, res) {
   const { username, email, password } = req.body
 
   try {
