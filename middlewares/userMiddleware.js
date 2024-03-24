@@ -25,7 +25,7 @@ const userRatingOwnershipMiddleware = async (req, res, next) => {
 }
 
 const userExistMiddleware = async (req, res, next) => {
-  // Check if the user is the owner of the recipe
+  // Check if the user exist
   const user =
     (await User.findOne({ email: req.body.email })) ||
     (await User.findOne({ username: req.body.username }))
@@ -36,8 +36,22 @@ const userExistMiddleware = async (req, res, next) => {
   next()
 }
 
+const userOwnershipMiddleware = async (req, res, next) => {
+  // Check if the user is the owner of the user
+  const user = await User.findById(req.params.id)
+  const userRequest = await User.findById(req.userId)
+  console.log(req)
+  if (req.userId !== user._id.toString() && userRequest.role !== 'admin') {
+    return res
+      .status(403)
+      .json({ message: 'Forbidden. You are not the owner of the user.' })
+  }
+  next()
+}
+
 module.exports = {
   userRecipeOwnershipMiddleware,
   userRatingOwnershipMiddleware,
   userExistMiddleware,
+  userOwnershipMiddleware,
 }
