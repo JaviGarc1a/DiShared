@@ -38,21 +38,24 @@ const userExistMiddleware = async (req, res, next) => {
 
 const userNotExistMiddleware = async (req, res, next) => {
   // Check if the user does not exist
-  const user =
-    (await User.findOne({ email: req.body.email })) ||
-    (await User.findOne({ username: req.body.username }))
-  if (!user) {
+  try {
+    const user =
+      (await User.findById(req.params.id)) ||
+      (await User.findOne({ username: req.body.username })) ||
+      (await User.findOne({ email: req.body.email }))
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' })
+    }
+    next()
+  } catch (error) {
     return res.status(404).json({ message: 'User not found.' })
   }
-  req.user = user
-  next()
 }
 
 const userOwnershipMiddleware = async (req, res, next) => {
   // Check if the user is the owner of the user
   const user = await User.findById(req.params.id)
   const userRequest = await User.findById(req.userId)
-  console.log(req)
   if (req.userId !== user._id.toString() && userRequest.role !== 'admin') {
     return res
       .status(403)
