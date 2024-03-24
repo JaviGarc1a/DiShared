@@ -7,6 +7,13 @@
  *   get:
  *     summary: Returns the list of all the recipes
  *     tags: [Recipes]
+ *     parameters:
+ *       - in: query
+ *         name: s
+ *         required: false
+ *         description: Search term
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: The list of the Recipes
@@ -395,8 +402,21 @@ const Rating = require('../models/rating')
 
 // GET all recipes
 router.get('/', async function (req, res, next) {
-  const recipes = await Recipe.find()
-  res.json(recipes)
+  const searchTerm = req.query.s || ''
+  if (searchTerm) {
+    // Define the search criteria
+    const searchCriteria = {
+      $or: [
+        { title: { $regex: searchTerm, $options: 'i' } }, // Search titles (case-insensitive)
+        { description: { $regex: searchTerm, $options: 'i' } }, // Search descriptions (case-insensitive)
+      ],
+    }
+    const recipes = await Recipe.find(searchCriteria)
+    res.json(recipes)
+  } else {
+    const recipes = await Recipe.find()
+    res.json(recipes)
+  }
 })
 
 // GET X popular recipes
