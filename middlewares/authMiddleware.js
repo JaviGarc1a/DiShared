@@ -1,6 +1,7 @@
 // authMiddleware.js
 
 const jwt = require('jsonwebtoken')
+const User = require('../models/user')
 
 const authMiddleware = (req, res, next) => {
   // Check if the token is present in the cookies
@@ -24,4 +25,14 @@ const authMiddleware = (req, res, next) => {
   }
 }
 
-module.exports = authMiddleware
+const adminMiddleware = async (req, res, next) => {
+  // Check if the user is an admin
+  const user = await User.findById(req.userId)
+  if (user.role !== 'admin') {
+    return res.status(403).json({ message: 'Forbidden. You are not an admin.' })
+  }
+  // Proceed to the next middleware or route handler
+  next()
+}
+
+module.exports = { authMiddleware, adminMiddleware }
