@@ -35,6 +35,16 @@
  *                 - medium
  *                 - hard
  *             description: The difficulty of the recipe
+ *         category:
+ *            type: string
+ *            enum:
+ *               - dessert
+ *               - starter
+ *               - main course
+ *               - appetizer
+ *               - drink
+ *               - other
+ *            description: The category of the recipe
  *         user_id:
  *            type: string
  *            description: The id of the user who created the recipe
@@ -59,6 +69,7 @@
  *           steps: ["Preheat the oven to 350°F", "Mix the ingredients", "Bake for 30 minutes"]
  *           preparation_time: 30
  *           difficulty: easy
+ *           category: dessert
  *           user_id: 5f7d6c6b6e4f0b0017e9b3f4
  *           ingredients: [{ingredient_id: 5f7d6c6b6e4f0b0017e9b3f4, quantity: 2, unit: cups}]
  */
@@ -70,12 +81,22 @@ const User = require('./user')
 
 const DifficultyEnum = ['easy', 'medium', 'hard']
 
+const categoryEnum = [
+  'dessert',
+  'starter',
+  'main course',
+  'appetizer',
+  'drink',
+  'other',
+]
+
 const RecipeSchema = new Schema({
   title: { type: String, required: true },
   description: String,
   steps: { type: [String], required: true },
   preparation_time: Number,
   difficulty: { type: String, enum: DifficultyEnum, required: true },
+  category: { type: String, enum: categoryEnum, required: true },
   user_id: {
     type: Schema.Types.ObjectId,
     ref: 'User',
@@ -110,7 +131,7 @@ RecipeSchema.pre(
     } catch (error) {
       next(error)
     }
-  },
+  }
 )
 
 // Add recipe to user's recipes

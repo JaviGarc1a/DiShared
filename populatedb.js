@@ -60,7 +60,7 @@ async function userCreate(
   email,
   password,
   role,
-  recipes = [],
+  recipes = []
 ) {
   const user = new User({ username, email, password, role, recipes })
   await user.save()
@@ -86,8 +86,9 @@ async function recipeCreate(
   steps,
   preparation_time,
   difficulty,
+  category,
   user_id,
-  ingredients,
+  ingredients
 ) {
   const recipe = new Recipe({
     title,
@@ -95,6 +96,7 @@ async function recipeCreate(
     steps,
     preparation_time,
     difficulty,
+    category,
     user_id,
     ingredients,
   })
@@ -121,12 +123,13 @@ async function createRecipes() {
       ],
       5,
       'easy',
+      'main course',
       users[0],
       [
         { ingredient_id: ingredients[5], quantity: 2, unit: 'unit' },
         { ingredient_id: ingredients[0], quantity: 1, unit: 'grams' },
         { ingredient_id: ingredients[1], quantity: 1, unit: 'grams' },
-      ],
+      ]
     ),
     recipeCreate(
       1,
@@ -145,8 +148,9 @@ async function createRecipes() {
       ],
       5,
       'easy',
+      'main course',
       users[1],
-      [{ ingredient_id: ingredients[5], quantity: 1, unit: 'unit' }],
+      [{ ingredient_id: ingredients[5], quantity: 1, unit: 'unit' }]
     ),
     recipeCreate(
       2,
@@ -162,11 +166,12 @@ async function createRecipes() {
       ],
       5,
       'easy',
+      'main course',
       users[2],
       [
         { ingredient_id: ingredients[5], quantity: 2, unit: 'unit' },
         { ingredient_id: ingredients[6], quantity: 1, unit: 'teaspoon' },
-      ],
+      ]
     ),
     recipeCreate(
       3,
@@ -183,8 +188,9 @@ async function createRecipes() {
       ],
       5,
       'easy',
+      'main course',
       users[3],
-      [{ ingredient_id: ingredients[5], quantity: 2, unit: 'unit' }],
+      [{ ingredient_id: ingredients[5], quantity: 2, unit: 'unit' }]
     ),
     recipeCreate(
       4,
@@ -200,8 +206,9 @@ async function createRecipes() {
       ],
       5,
       'easy',
+      'main course',
       users[4],
-      [{ ingredient_id: ingredients[5], quantity: 2, unit: 'unit' }],
+      [{ ingredient_id: ingredients[5], quantity: 2, unit: 'unit' }]
     ),
     recipeCreate(
       5,
@@ -221,12 +228,13 @@ async function createRecipes() {
       ],
       5,
       'easy',
+      'main course',
       users[5],
       [
         { ingredient_id: ingredients[5], quantity: 2, unit: 'unit' },
         { ingredient_id: ingredients[0], quantity: 1, unit: 'grams' },
         { ingredient_id: ingredients[1], quantity: 1, unit: 'grams' },
-      ],
+      ]
     ),
   ])
 }
@@ -254,7 +262,7 @@ async function ratingCreate(
   comment,
   user_id,
   recipe_id,
-  created_at,
+  created_at
 ) {
   const rating = new Rating({ score, comment, user_id, recipe_id, created_at })
   await rating.save()
