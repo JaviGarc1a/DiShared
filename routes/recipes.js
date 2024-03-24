@@ -463,6 +463,70 @@
  *                 message:
  *                   type: string
  *                   description: The message of the response
+ * /recipes/wo-ingredients:
+ *   get:
+ *     summary: Get recipes without specified ingredients
+ *     tags: [Recipes]
+ *     parameters:
+ *       - in: query
+ *         name: ings
+ *         required: true
+ *         description: List of ingredients to exclude from recipes
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         example: ["flour", "sugar"]
+ *     responses:
+ *       '200':
+ *         description: A list of recipes without the specified ingredients
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Recipe'
+ *       '500':
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: The message of the response
+ * /recipes/ingredients:
+ *   get:
+ *     summary: Get recipes with specified ingredients
+ *     tags: [Recipes]
+ *     parameters:
+ *       - in: query
+ *         name: ings
+ *         required: true
+ *         description: List of ingredients to include in recipes
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         example: ["flour", "sugar"]
+ *     responses:
+ *       '200':
+ *         description: A list of recipes with the specified ingredients
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Recipe'
+ *       '500':
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: The message of the response
  */
 
 var express = require('express')
@@ -616,6 +680,86 @@ router.get('/stats', authMiddleware, async function (req, res, next) {
   })
 })
 
+// GET /recipes/user/:id - Get a list of a user's recipes by their ID.
+router.get('/user/:username', authMiddleware, async function (req, res, next) {
+  try {
+    const username = req.params.username
+
+    if (!username) {
+      return res.status(400).json({ message: 'User ID is required' })
+    }
+
+    const user = await User.findOne({ username: username })
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    var recipes = await Recipe.find({ user_id: user._id })
+
+    recipes = await Promise.all(
+      recipes.map(async (recipe) => {
+        return await getRecipeDetails(recipe.toObject())
+      }),
+    )
+
+    res.json(recipes)
+  } catch (err) {
+    return res.status(500).json({ message: 'Something went wrong' })
+  }
+})
+
+// GET /recipes/wo-ingredients?ings=[...] - Retrieves a list of recipes that don't contain the ingredients ing1, ing2, and ing3.
+router.get('/wo-ingredients', authMiddleware, async function (req, res, next) {
+  try {
+    const ingredients = req.query.ings.map((ing) => ing.trim())
+    const ingredientsIds = await Ingredient.find({ name: { $in: ingredients } })
+
+    var recipes = await Recipe.find({
+      ingredients: {
+        $not: {
+          $elemMatch: {
+            ingredient_id: { $in: ingredientsIds },
+          },
+        },
+      },
+    })
+
+    recipes = await Promise.all(
+      recipes.map(async (recipe) => {
+        return await getRecipeDetails(recipe.toObject())
+      }),
+    )
+    res.json(recipes)
+  } catch (err) {
+    return res.status(500).json({ message: 'Something went wrong' })
+  }
+})
+
+// GET /recipes/ingredients?ings=[...] - Retrieves a list of recipes that contain the ingredients ing1, ing2, and ing3.
+router.get('/ingredients', authMiddleware, async function (req, res, next) {
+  try {
+    const ingredients = req.query.ings.map((ing) => ing.trim())
+    const ingredientsIds = await Ingredient.find({ name: { $in: ingredients } })
+
+    var recipes = await Recipe.find({
+      ingredients: {
+        $elemMatch: {
+          ingredient_id: { $in: ingredientsIds },
+        },
+      },
+    })
+
+    recipes = await Promise.all(
+      recipes.map(async (recipe) => {
+        return await getRecipeDetails(recipe.toObject())
+      }),
+    )
+    res.json(recipes)
+  } catch (err) {
+    return res.status(500).json({ message: 'Something went wrong' })
+  }
+})
+
 // GET a recipe by ID
 router.get('/:id', recipeExistMiddleware, async function (req, res, next) {
   try {
@@ -748,33 +892,5 @@ router.delete(
     }
   },
 )
-
-// GET /recipes/user/:id - Get a list of a user's recipes by their ID.
-router.get('/user/:username', authMiddleware, async function (req, res, next) {
-  try {
-    const username = req.params.username
-
-    if (!username) {
-      return res.status(400).json({ message: 'User ID is required' })
-    }
-
-    const user = await User.findOne({ username: username })
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' })
-    }
-
-    var recipes = await Recipe.find({ user_id: user._id })
-
-    recipes = await Promise.all(
-      recipes.map(async (recipe) => {
-        return await getRecipeDetails(recipe.toObject())
-      }),
-    )
-
-    res.json(recipes)
-  } catch (err) {
-    return res.status(500).json({ message: 'Something went wrong' })
-  }
-})
 
 module.exports = router
