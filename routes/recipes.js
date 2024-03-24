@@ -1089,6 +1089,7 @@ router.post('/', authMiddleware, async function (req, res) {
     steps,
     preparation_time,
     difficulty,
+    category,
     ingredients,
   } = req.body
 
@@ -1116,6 +1117,7 @@ router.post('/', authMiddleware, async function (req, res) {
     steps,
     preparation_time,
     difficulty,
+    category,
     user_id: req.userId,
     ingredients,
   })
@@ -1141,6 +1143,7 @@ router.put(
       steps,
       preparation_time,
       difficulty,
+      category,
       ingredients,
     } = req.body
 
@@ -1167,6 +1170,7 @@ router.put(
       steps,
       preparation_time,
       difficulty,
+      category,
       user_id: req.userId,
       ingredients,
     }
