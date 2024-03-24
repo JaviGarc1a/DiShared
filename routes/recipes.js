@@ -288,9 +288,7 @@ router.get('/:id', recipeExistMiddleware, async function (req, res, next) {
 
     const user = await User.findById(recipe.user_id).select('-password')
 
-    if (user) {
-      recipe.user = user
-    }
+    recipe.user = user ? user : { username: 'Deleted User' }
 
     const ratings = await Rating.find({ recipe_id: recipe._id }).lean()
 
@@ -303,7 +301,10 @@ router.get('/:id', recipeExistMiddleware, async function (req, res, next) {
       if (users) {
         recipe.ratings = recipe.ratings.map((r) => {
           const user = users.find((u) => u._id.equals(r.user_id))
-          return { ...r, poster: user.username }
+          return {
+            ...r,
+            poster: user ? user.username : { username: 'Deleted User' },
+          }
         })
       }
     }
@@ -324,6 +325,7 @@ router.get('/:id', recipeExistMiddleware, async function (req, res, next) {
 
     res.json(recipe)
   } catch (err) {
+    console.log(err)
     return res.status(500).json({ message: 'Something went wrong' })
   }
 })
