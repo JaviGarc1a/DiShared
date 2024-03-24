@@ -248,8 +248,15 @@ async function relateUsersRecipes() {
   ])
 }
 
-async function ratingCreate(index, score, comment, user_id, recipe_id) {
-  const rating = new Rating({ score, comment, user_id, recipe_id })
+async function ratingCreate(
+  index,
+  score,
+  comment,
+  user_id,
+  recipe_id,
+  created_at,
+) {
+  const rating = new Rating({ score, comment, user_id, recipe_id, created_at })
   await rating.save()
   ratings[index] = rating
   console.log('Debug: Rating created')

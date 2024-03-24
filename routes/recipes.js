@@ -327,6 +327,18 @@
  *         description: Number of popular recipes to retrieve
  *         schema:
  *           type: integer
+ *       - in: query
+ *         name: year
+ *         required: false
+ *         description: Year to filter by
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: month
+ *         required: false
+ *         description: Month to filter by (integer between 1 and 12)
+ *         schema:
+ *           type: integer
  *     responses:
  *       '200':
  *         description: A list of X popular recipes
@@ -643,8 +655,28 @@ router.get('/latest', async function (req, res, next) {
 // GET X popular recipes
 router.get('/popular', async function (req, res, next) {
   const limit = parseInt(req.query.limit) || 5
-  const ratings = await Rating.find().lean()
-  console.log(ratings)
+  const year = parseInt(req.query.year) || false
+  const month = parseInt(req.query.month) || false
+  const query = {}
+
+  if (year && month) {
+    query.created_at = {
+      $gte: new Date(year, month - 1, 1),
+      $lt: new Date(year, month, 1),
+    }
+  } else if (year) {
+    query.created_at = {
+      $gte: new Date(year, 0, 1),
+      $lt: new Date(year + 1, 0, 1),
+    }
+  } else if (month) {
+    query.created_at = {
+      $gte: new Date(new Date().getFullYear(), month - 1, 1),
+      $lt: new Date(new Date().getFullYear(), month, 1),
+    }
+  }
+
+  const ratings = await Rating.find(query).lean()
 
   // Group ratings by recipe_id
   const ratingsByRecipe = ratings.reduce((acc, rating) => {

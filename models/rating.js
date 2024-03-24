@@ -37,7 +37,7 @@ const RatingSchema = new Schema({
   comment: String,
   recipe_id: { type: Schema.Types.ObjectId, ref: 'Recipe', inmutable: true },
   user_id: { type: Schema.Types.ObjectId, ref: 'User', inmutable: true },
-  createdAt: { type: Date, default: Date.now },
+  created_at: { type: Date, default: Date.now },
 })
 
 // Define one rating on a recipe per user
