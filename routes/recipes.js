@@ -23,7 +23,7 @@
  *       - in: query
  *         name: maxRating
  *         required: false
- *         description: Maxinum rating
+ *         description: Maximum rating
  *         schema:
  *           type: int
  *       - in: query
@@ -41,7 +41,7 @@
  *       - in: query
  *         name: difficulty
  *         required: false
- *         description: Maxinum rating
+ *         description: Maximum rating
  *         schema:
  *           type: string
  *           enum: [easy, medium, hard]
@@ -754,9 +754,6 @@ router.get('/', async function (req, res) {
   const timeMax = parseInt(req.query.timeMax) || Infinity
   const difficulty = req.query.difficulty || ''
 
-  const ratingFilter = await Rating.find({
-    score: { $gte: minRating, $lte: maxRating },
-  })
   // Define the search criteria
   const searchCriteria = {
     $or: [
@@ -767,14 +764,16 @@ router.get('/', async function (req, res) {
     preparation_time: { $gte: timeMin, $lte: timeMax }, // Search by preparation time
   }
 
-  const recipes = await Recipe.find(searchCriteria)
+  const recipes = await Recipe.find(searchCriteria).lean()
 
-  const filteredRecipes = recipes.filter((recipe) => {
-    const recipeRatings = ratingFilter.filter(
-      (rating) => rating.recipe_id.toString() === recipe._id.toString(),
-    )
-    return recipeRatings.length > 0 || minRating === 0
-  })
+  for (let recipe of recipes) {
+    const ratings = await Rating.find({ recipe_id: recipe._id }).lean()
+    recipe.avgRating = ratings.reduce((acc, rating) => acc + rating.score, 0)
+  }
+
+  const filteredRecipes = recipes.filter(
+    (recipe) => recipe.avgRating >= minRating && recipe.avgRating <= maxRating,
+  )
 
   res.json(filteredRecipes)
 })
