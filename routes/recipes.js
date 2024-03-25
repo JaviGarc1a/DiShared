@@ -41,7 +41,7 @@
  *       - in: query
  *         name: difficulty
  *         required: false
- *         description: Maximum rating
+ *         description: Difficulty of recipe
  *         schema:
  *           type: string
  *           enum: [easy, medium, hard]
@@ -772,7 +772,7 @@ router.get('/', async function (req, res) {
   }
 
   const filteredRecipes = recipes.filter(
-    (recipe) => recipe.avgRating >= minRating && recipe.avgRating <= maxRating,
+    (recipe) => recipe.avgRating >= minRating && recipe.avgRating <= maxRating
   )
 
   res.json(filteredRecipes)
@@ -840,7 +840,7 @@ router.get('/popular', async function (req, res) {
     recipeRatings.slice(0, limit).map(async (recipeRating) => {
       const recipe = await Recipe.findById(recipeRating.recipe_id)
       return { ...recipe._doc, avgScore: recipeRating.avgScore }
-    }),
+    })
   )
 
   res.json(popularRecipes)
@@ -861,7 +861,7 @@ router.get('/stats', authMiddleware, async function (req, res) {
   const ingredientsCount = ingredients.map((ingredient) => {
     const count = recipes.reduce((acc, recipe) => {
       const hasIngredient = recipe.ingredients.find((i) =>
-        i.ingredient_id.equals(ingredient._id),
+        i.ingredient_id.equals(ingredient._id)
       )
       return acc + (hasIngredient ? 1 : 0)
     }, 0)
@@ -878,7 +878,7 @@ router.get('/stats', authMiddleware, async function (req, res) {
   const recipesPerIngredient = ingredients.map((ingredient) => {
     const count = recipes.reduce((acc, recipe) => {
       const hasIngredient = recipe.ingredients.find((i) =>
-        i.ingredient_id.equals(ingredient._id),
+        i.ingredient_id.equals(ingredient._id)
       )
       return acc + (hasIngredient ? 1 : 0)
     }, 0)
@@ -890,7 +890,7 @@ router.get('/stats', authMiddleware, async function (req, res) {
   const recipesPerDifficulty = ['easy', 'medium', 'hard'].map((difficulty) => {
     const count = recipes.reduce(
       (acc, recipe) => (recipe.difficulty === difficulty ? acc + 1 : acc),
-      0,
+      0
     )
     return { difficulty, count }
   })
@@ -901,7 +901,7 @@ router.get('/stats', authMiddleware, async function (req, res) {
   const topContributors = users.map((user) => {
     const count = recipes.reduce(
       (acc, recipe) => (recipe.user_id.equals(user._id) ? acc + 1 : acc),
-      0,
+      0
     )
     return { user: user.username, count }
   })
@@ -935,12 +935,12 @@ router.get('/trending', authMiddleware, async function (req, res) {
     const lastMonthDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth() - 1,
-      1,
+      1
     )
     const currentMonthDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
-      1,
+      1
     )
 
     const ratingsLastMonth = await Rating.find({
@@ -978,7 +978,7 @@ router.get('/trending', authMiddleware, async function (req, res) {
         acc[rating.recipe_id].push(rating)
         return acc
       },
-      {},
+      {}
     )
 
     // Calculate the difference in average rating between the last month and the current month
@@ -990,7 +990,7 @@ router.get('/trending', authMiddleware, async function (req, res) {
           ratings.length
         const change = avgScore - (avgRatingLastMonth[recipeId] || 0)
         return { recipeId, change }
-      }),
+      })
     )
 
     // Sort recipes by change in popularity
@@ -1004,7 +1004,7 @@ router.get('/trending', authMiddleware, async function (req, res) {
         const recipeObject = await Recipe.findById(recipe.recipeId)
         const recipeDetails = await getRecipeDetails(recipeObject.toObject())
         return { ...recipeDetails, change: recipe.change }
-      }),
+      })
     )
 
     res.json(recipes)
@@ -1033,7 +1033,7 @@ router.get('/user/:username', authMiddleware, async function (req, res) {
     recipes = await Promise.all(
       recipes.map(async (recipe) => {
         return await getRecipeDetails(recipe.toObject())
-      }),
+      })
     )
 
     res.json(recipes)
@@ -1064,7 +1064,7 @@ router.get('/wo-ingredients', authMiddleware, async function (req, res) {
     recipes = await Promise.all(
       recipes.map(async (recipe) => {
         return await getRecipeDetails(recipe.toObject())
-      }),
+      })
     )
     res.json(recipes)
   } catch (err) {
@@ -1092,7 +1092,7 @@ router.get('/ingredients', authMiddleware, async function (req, res) {
     recipes = await Promise.all(
       recipes.map(async (recipe) => {
         return await getRecipeDetails(recipe.toObject())
-      }),
+      })
     )
     res.json(recipes)
   } catch (err) {
@@ -1213,13 +1213,13 @@ router.put(
         recipe,
         {
           new: true,
-        },
+        }
       )
       res.status(200).json(updatedRecipe)
     } catch (err) {
       res.status(400).json({ message: err.message })
     }
-  },
+  }
 )
 
 // DELETE a recipe by ID (protected route)
@@ -1236,7 +1236,7 @@ router.delete(
     } catch (err) {
       return res.status(500).json({ message: 'Something went wrong' })
     }
-  },
+  }
 )
 
 // GET similar recipes
@@ -1277,7 +1277,7 @@ router.get(
     } catch (err) {
       return res.status(500).json({ message: 'Something went wrong' })
     }
-  },
+  }
 )
 
 module.exports = router
