@@ -201,7 +201,7 @@ DELETE /ingredients/{id}
   GET /recipes
 ```
 
-**Path Parameters**
+**Query Parameters**
 
 | Parameter    | Type     | Description                                                      |
 | :----------- | :------- | :--------------------------------------------------------------- |
@@ -378,7 +378,7 @@ GET /recipes/similar/{id}
 GET /recipes/user/{id}/category/{category}
 ```
 
-**Query Parameters**
+**Path Parameters**
 
 | Parameter  | Type     | Description                                                                                                                    |
 | :--------- | :------- | :----------------------------------------------------------------------------------------------------------------------------- |
