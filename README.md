@@ -295,7 +295,7 @@ GET /recipes/latest
 #### Get a popular recipes
 
 ```https
-GET /recipes/latest
+GET /recipes/popular
 ```
 
 **Query Parameters**
