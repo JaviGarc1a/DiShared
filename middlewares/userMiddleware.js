@@ -64,10 +64,23 @@ const userOwnershipMiddleware = async (req, res, next) => {
   next()
 }
 
+const userCanEditUser = async (req, res, next) => {
+  // Check if the user can edit the user
+  const user = await User.findById(req.userId)
+  if (user.role !== 'admin' && user.id !== req.params.id) {
+    return res
+      .status(403)
+      .json({ message: 'Forbidden. You cannot edit this user.' })
+  }
+  // Proceed to the next middleware or route handler
+  next()
+}
+
 module.exports = {
   userRecipeOwnershipMiddleware,
   userRatingOwnershipMiddleware,
   userExistMiddleware,
   userOwnershipMiddleware,
   userNotExistMiddleware,
+  userCanEditUser,
 }

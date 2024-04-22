@@ -210,14 +210,11 @@
 var express = require('express')
 var router = express.Router()
 
-const {
-  authMiddleware,
-  adminMiddleware,
-} = require('../middlewares/authMiddleware')
+const { authMiddleware } = require('../middlewares/authMiddleware')
 const {
   userExistMiddleware,
-  userOwnershipMiddleware,
   userNotExistMiddleware,
+  userCanEditUser,
 } = require('../middlewares/userMiddleware')
 
 const User = require('../models/user')
@@ -235,7 +232,7 @@ router.get('/', async function (req, res) {
         const userRecipes = await getUserRecipes(user.recipes)
         user.recipes = userRecipes
         return user
-      })
+      }),
     )
 
     res.json(usersWithRecipes)
@@ -278,7 +275,7 @@ router.get(
     } catch (error) {
       return res.status(500).json({ message: 'Something went wrong' })
     }
-  }
+  },
 )
 
 /* PUT update user by ID */
@@ -286,8 +283,7 @@ router.put(
   '/:id',
   authMiddleware,
   userNotExistMiddleware,
-  userOwnershipMiddleware,
-  adminMiddleware,
+  userCanEditUser,
   async function (req, res) {
     const { username, email, password } = req.body
 
@@ -295,21 +291,20 @@ router.put(
       const updateUser = await User.findByIdAndUpdate(
         req.params.id,
         { username, email, password },
-        { new: true }
+        { new: true },
       )
       res.status(200).json(updateUser)
     } catch (error) {
       return res.status(500).json({ message: 'Something went wrong' })
     }
-  }
+  },
 )
 
 /* DELETE user by ID */
 router.delete(
   '/:id',
   authMiddleware,
-  userOwnershipMiddleware,
-  adminMiddleware,
+  userCanEditUser,
   async function (req, res) {
     try {
       const deleteUser = await User.findByIdAndDelete(req.params.id)
@@ -321,7 +316,7 @@ router.delete(
     } catch (error) {
       return res.status(500).json({ message: 'Something went wrong' })
     }
-  }
+  },
 )
 
 module.exports = router
