@@ -1020,10 +1020,20 @@ router.get('/user/:username', authMiddleware, async function (req, res) {
 // GET /recipes/wo-ingredients?ings=[...] - Retrieves a list of recipes that don't contain the ingredients ing1, ing2, and ing3.
 router.get('/wo-ingredients', authMiddleware, async function (req, res) {
   try {
-    const ingredients = req.query.ings.map((ing) => ing.trim())
+    let ingredients
+    // check if the query parameter is an array
+    if (Array.isArray(req.query.ings)) {
+      ingredients = req.query.ings.map((ing) => ing.trim())
+    } else {
+      ingredients = [req.query.ings]
+    }
+    // Lowercase the ingredients and uppercase the first letter
+    ingredients = ingredients.map((ing) => {
+      return ing.charAt(0).toUpperCase() + ing.slice(1).toLowerCase()
+    })
     // find the ingredient by name case insensitive
     const ingredientsIds = await Ingredient.find({
-      name: { $in: ingredients, $options: 'i' },
+      name: { $in: ingredients },
     })
 
     var recipes = await Recipe.find({
@@ -1050,10 +1060,20 @@ router.get('/wo-ingredients', authMiddleware, async function (req, res) {
 // GET /recipes/ingredients?ings=[...] - Retrieves a list of recipes that contain the ingredients ing1, ing2, and ing3.
 router.get('/ingredients', authMiddleware, async function (req, res) {
   try {
-    const ingredients = req.query.ings.map((ing) => ing.trim())
+    let ingredients
+    // check if the query parameter is an array
+    if (Array.isArray(req.query.ings)) {
+      ingredients = req.query.ings.map((ing) => ing.trim())
+    } else {
+      ingredients = [req.query.ings]
+    }
+    // Lowercase the ingredients and uppercase the first letter
+    ingredients = ingredients.map((ing) => {
+      return ing.charAt(0).toUpperCase() + ing.slice(1).toLowerCase()
+    })
     // find the ingredient by name case insensitive
     const ingredientsIds = await Ingredient.find({
-      name: { $in: ingredients, $options: 'i' },
+      name: { $in: ingredients },
     })
 
     var recipes = await Recipe.find({
