@@ -1027,14 +1027,17 @@ router.get('/wo-ingredients', authMiddleware, async function (req, res) {
     } else {
       ingredients = [req.query.ings]
     }
-    // Lowercase the ingredients and uppercase the first letter
-    ingredients = ingredients.map((ing) => {
-      return ing.charAt(0).toUpperCase() + ing.slice(1).toLowerCase()
-    })
-    // find the ingredient by name case insensitive
-    const ingredientsIds = await Ingredient.find({
-      name: { $in: ingredients },
-    })
+
+    let ingredientsIds = []
+    for (let i of ingredients) {
+      // Find the ingredient by name (case insensitive)
+      const ingredient = await Ingredient.findOne({
+        name: { $regex: i, $options: 'i' },
+      })
+      if (ingredient) {
+        ingredientsIds.push(ingredient._id)
+      }
+    }
 
     var recipes = await Recipe.find({
       ingredients: {
@@ -1067,14 +1070,17 @@ router.get('/ingredients', authMiddleware, async function (req, res) {
     } else {
       ingredients = [req.query.ings]
     }
-    // Lowercase the ingredients and uppercase the first letter
-    ingredients = ingredients.map((ing) => {
-      return ing.charAt(0).toUpperCase() + ing.slice(1).toLowerCase()
-    })
-    // find the ingredient by name case insensitive
-    const ingredientsIds = await Ingredient.find({
-      name: { $in: ingredients },
-    })
+
+    let ingredientsIds = []
+    for (let i of ingredients) {
+      // Find the ingredient by name (case insensitive)
+      const ingredient = await Ingredient.findOne({
+        name: { $regex: i, $options: 'i' },
+      })
+      if (ingredient) {
+        ingredientsIds.push(ingredient._id)
+      }
+    }
 
     var recipes = await Recipe.find({
       ingredients: {
