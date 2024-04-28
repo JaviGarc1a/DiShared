@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  mongodb:
+    restart: always
+    image: mongo:latest
+    container_name: mongodb
+    expose:
+      - '27017'
+    networks:
+      - mongo_network
+    environment:
+      MONGO_INITDB_DATABASE: 'dishared'
+    ports:
+      - '27017:27017'
+  dishared:
+    restart: always
+    container_name: dishared
+    image: dishared:latest
+    build: .
+    command: sh -c "npm run deploy"
+    ports:
+      - '3000:3000'
+    networks:
+      - web_network
+      - mongo_network
+    depends_on:
+      - mongodb
+
+networks:
+  mongo_network:
+    driver: bridge
+  web_network:
+    driver: bridge
