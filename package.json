@@ -7,7 +7,7 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "start": "node --env-file=.env --watch ./bin/www",
         "populate": "node --env-file=.env populatedb.js",
-        "deploy": "node --env-file=.env.deploy populatedb.js && node --env-file=.env.deploy ./bin/www"
+        "deploy": "node --env-file=.env populatedb.js && node --env-file=.env ./bin/www"
     },
     "repository": {
         "type": "git",
