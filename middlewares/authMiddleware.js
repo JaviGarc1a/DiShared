@@ -3,7 +3,7 @@
 const jwt = require('jsonwebtoken')
 const User = require('../models/user')
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   // Check if the token is present in the cookies
   const token = req.cookies.token
 
@@ -19,9 +19,9 @@ const authMiddleware = (req, res, next) => {
     req.userId = decoded.userId
 
     // Check user existence
-    const user = User.findById(req.userId)
+    const user = await User.findById(req.userId)
     if (!user) {
-      return res.status(404).json({ message: 'User not found' })
+      return res.status(403).json({ message: 'Unauthorized: Invalid token' })
     }
 
     // Proceed to the next middleware or route handler
