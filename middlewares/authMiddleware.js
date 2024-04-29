@@ -18,6 +18,12 @@ const authMiddleware = (req, res, next) => {
     // Attach the decoded user object to the request
     req.userId = decoded.userId
 
+    // Check user existence
+    const user = User.findById(req.userId)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
     // Proceed to the next middleware or route handler
     next()
   } catch (error) {
